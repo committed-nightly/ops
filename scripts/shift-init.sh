@@ -17,16 +17,22 @@ set -u
 git config --global user.name  "${SHIFT_NAME}[bot]"
 git config --global user.email "${BOT_USER_ID}+${SHIFT_NAME}[bot]@users.noreply.github.com"
 
-# git pushes authenticate with a freshly minted token, same reasoning as
-# the gh shim.
-git config --global credential."https://github.com".helper \
-  '!f() { echo username=x-access-token; echo "password=$(/usr/local/bin/mint-token.sh)"; }; f'
-
-git config --global credential."https://github.com".useHttpPath false
+# Only take over git's credentials if minting actually works. The
+# session already has working GitHub auth — the built-in proxy hands the
+# git client a scoped credential — so replacing that with a helper that
+# can't mint leaves git worse off than if this script had never run.
+if /usr/local/bin/mint-token.sh >/dev/null 2>&1; then
+  git config --global credential."https://github.com".helper \
+    '!f() { echo username=x-access-token; echo "password=$(/usr/local/bin/mint-token.sh)"; }; f'
+  git config --global credential."https://github.com".useHttpPath false
+else
+  echo "shift-init: token minting unavailable — leaving the session's own git credentials in place" >&2
+  echo "shift-init: commits will not be attributed to ${SHIFT_NAME}[bot]" >&2
+fi
 
 # Sanity check, visible in the transcript if it fails.
 if ! gh api /orgs/committed-nightly --jq .login >/dev/null 2>&1; then
-  echo "WARNING: gh cannot reach the org — token mint or app install is wrong" >&2
+  echo "WARNING: gh cannot reach the org — check the app install and the network allowlist" >&2
 fi
 
 exit 0
