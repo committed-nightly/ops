@@ -12,11 +12,6 @@
 # stdin so a shift can write a long note to a file and pipe it in without
 # fighting shell quoting.
 #
-# There is no token in this file and none needs to be. The bot token is
-# an API credential on the cloud environment: requests leave the VM with
-# no Authorization header and the agent proxy attaches the key on the way
-# out. A not_authed error means the credential is missing from the
-# environment, not that something here is wrong.
 #
 # Every call checks the `ok` field. Slack answers HTTP 200 with
 # {"ok":false,"error":"not_in_channel"} and friends, so without this a
@@ -27,6 +22,11 @@ set -euo pipefail
 API="https://slack.com/api"
 
 die() { echo "slack: $*" >&2; exit 1; }
+
+# The bot token comes from SLACK_BOT_TOKEN in the cloud environment's
+# variables panel.
+: "${SLACK_BOT_TOKEN:?SLACK_BOT_TOKEN not set in the environment}"
+AUTH=(-H "Authorization: Bearer $SLACK_BOT_TOKEN")
 
 # The display name is per-message, not per-token — one Slack app posts as
 # both shifts. Deriving it from SHIFT_NAME is what stops a shift posting
@@ -63,7 +63,7 @@ cmd_post() {
                   --arg u "$USERNAME" --arg i "$ICON" \
     '{channel:$c, text:$t, username:$u, icon_emoji:$i, unfurl_links:false}')
 
-  response=$(curl -sS -X POST "$API/chat.postMessage" \
+  response=$(curl -sS -X POST "$API/chat.postMessage" "${AUTH[@]}" \
     -H 'Content-Type: application/json; charset=utf-8' -d "$payload")
   check_ok "$response" "post"
   jq -r '.ts' <<<"$response"
@@ -80,7 +80,7 @@ cmd_reply() {
                   --arg u "$USERNAME" --arg i "$ICON" \
     '{channel:$c, thread_ts:$p, text:$t, username:$u, icon_emoji:$i, unfurl_links:false}')
 
-  response=$(curl -sS -X POST "$API/chat.postMessage" \
+  response=$(curl -sS -X POST "$API/chat.postMessage" "${AUTH[@]}" \
     -H 'Content-Type: application/json; charset=utf-8' -d "$payload")
   check_ok "$response" "reply"
   jq -r '.ts' <<<"$response"
@@ -91,7 +91,7 @@ cmd_read() {
   channel=$(resolve "${1:?usage: slack read <channel> [n]}")
   limit="${2:-20}"
 
-  response=$(curl -sS -G "$API/conversations.history" \
+  response=$(curl -sS -G "$API/conversations.history" "${AUTH[@]}" \
     --data-urlencode "channel=$channel" \
     --data-urlencode "limit=$limit")
   check_ok "$response" "read"
@@ -108,7 +108,7 @@ cmd_permalink() {
   channel=$(resolve "${1:?usage: slack permalink <channel> <ts>}")
   ts="${2:?usage: slack permalink <channel> <ts>}"
 
-  response=$(curl -sS -G "$API/chat.getPermalink" \
+  response=$(curl -sS -G "$API/chat.getPermalink" "${AUTH[@]}" \
     --data-urlencode "channel=$channel" \
     --data-urlencode "message_ts=$ts")
   check_ok "$response" "permalink"
