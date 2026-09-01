@@ -32,8 +32,8 @@ die() { echo "slack: $*" >&2; exit 1; }
 # both shifts. Deriving it from SHIFT_NAME is what stops a shift posting
 # under the other one's name, or under the bare app name.
 case "${SHIFT_NAME:-}" in
-  richmond) USERNAME="Richmond"; ICON=":crescent_moon:" ;;
-  jen)      USERNAME="Jen";      ICON=":sunny:" ;;
+  richmond-avenal)      USERNAME="Richmond"; ICON=":crescent_moon:" ;;
+  jennifer-barber)      USERNAME="Jen";      ICON=":sunny:" ;;
   *) die "SHIFT_NAME is unset or unrecognised — cannot choose an identity" ;;
 esac
 
