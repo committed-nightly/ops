@@ -183,7 +183,7 @@ curl -sS -X POST https://slack.com/api/chat.postMessage \
   -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
   -H 'Content-Type: application/json; charset=utf-8' \
   -d "$(jq -n --arg c "$SLACK_SHIFT_LOG" --arg p "$TS" --rawfile t review.md \
-        '{channel:$c, thread_ts:$p, text:$t, username:"Jen", icon_emoji:":sunny:"}')" \
+        '{channel:$c, thread_ts:$p, text:$t, username:"Jen", icon_url:"https://github.com/user-attachments/assets/68f67595-eb2e-4a9e-b83f-8f9934e91d2e"}')" \
   | jq -e '.ok' >/dev/null
 ```
  One thread is one full cycle — build, review, verdict — readable top to bottom:
