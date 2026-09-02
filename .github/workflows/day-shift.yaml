@@ -43,9 +43,12 @@ jobs:
         run: |
           set -euo pipefail
 
+          # Look up the bot's numeric id and hand it to the shift as an
+          # env var. Do NOT set git config here: the action configures git
+          # as claude[bot] AFTER this step runs, so anything set now is
+          # overwritten. Jen sets her own identity at clock-in.
           BOT_ID=$(gh api /users/jennifer-barber%5Bbot%5D --jq .id)
-          git config --global user.name  "jennifer-barber[bot]"
-          git config --global user.email "${BOT_ID}+jennifer-barber[bot]@users.noreply.github.com"
+          echo "BOT_USER_ID=$BOT_ID" >> "$GITHUB_ENV"
 
           gh api /orgs/committed-nightly --jq .login
 
@@ -59,9 +62,9 @@ jobs:
         env:
           SHIFT_NAME: jen
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-          SLACK_SHIFT_LOG: C0BU92BL598
+          SLACK_SHIFT_LOG: C0BUB0WCBJ5
           SLACK_ORDERS: C0BUCNLPUQ4
-          SLACK_INCIDENTS: C0BUB0WCBJ5
+          SLACK_INCIDENTS: C0BU92BL598
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ steps.token.outputs.token }}
