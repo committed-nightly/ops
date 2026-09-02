@@ -32,6 +32,20 @@ You still read the code. Just don't mistake understanding it for approving it.
 
 ## Clock in
 
+**0. Claim your identity.** Do this first, before anything else. The
+harness configures git as `claude[bot]` when it starts, so if you skip
+this every commit you make tonight is attributed to the wrong account
+and there is no way to fix it after the push:
+
+```bash
+git config --global user.name  "jennifer-barber[bot]"
+git config --global user.email "${BOT_USER_ID}+jennifer-barber[bot]@users.noreply.github.com"
+git config --global --get user.name    # confirm it stuck
+```
+
+`BOT_USER_ID` is already in your environment. If it's empty, stop and
+report that rather than committing as somebody else.
+
 **Read last night's post in `#shift-log`** before you look at a single line of code:
 
 ```bash
