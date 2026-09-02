@@ -46,11 +46,13 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Commit identity. The numeric id is what makes GitHub attribute
-          # the commit to the app rather than showing an unknown author.
+          # Look up the bot's numeric id and hand it to the shift as an
+          # env var. Do NOT set git config here: the action configures git
+          # as claude[bot] AFTER this step runs, so anything set now is
+          # overwritten. The shift sets its own identity at clock-in,
+          # which happens after the action is done meddling.
           BOT_ID=$(gh api /users/richmond-avenal%5Bbot%5D --jq .id)
-          git config --global user.name  "richmond-avenal[bot]"
-          git config --global user.email "${BOT_ID}+richmond-avenal[bot]@users.noreply.github.com"
+          echo "BOT_USER_ID=$BOT_ID" >> "$GITHUB_ENV"
 
           # Confirm the identity before the shift starts, so a bad key
           # fails here rather than three hours in.
@@ -62,9 +64,9 @@ jobs:
         env:
           SHIFT_NAME: richmond
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-          SLACK_SHIFT_LOG: C0BU92BL598
+          SLACK_SHIFT_LOG: C0BUB0WCBJ5
           SLACK_ORDERS: C0BUCNLPUQ4
-          SLACK_INCIDENTS: C0BUB0WCBJ5
+          SLACK_INCIDENTS: C0BU92BL598
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ steps.token.outputs.token }}
