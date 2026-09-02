@@ -1,0 +1,71 @@
+name: Day Shift
+
+# Lives in committed-nightly/ops alongside the night shift, on the
+# default branch.
+# Ten hours after Richmond clocks in, so a long build can't overlap the
+# review of it.
+
+on:
+  schedule:
+    - cron: "0 8 * * *"     # 08:00 UTC
+  workflow_dispatch:
+
+jobs:
+  jen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      # Jen's own app, and this is the whole reason the design works
+      # again: two distinct installation tokens mean two distinct
+      # identities, so GitHub will accept jennifer-barber[bot]'s approval on a PR
+      # authored by richmond-avenal[bot]. Branch protection can go back to
+      # required_approving_review_count: 1 and actually mean it.
+      - name: Mint Jen's token
+        id: token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.JEN_APP_ID }}
+          private-key: ${{ secrets.JEN_PRIVATE_KEY }}
+          owner: committed-nightly
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Prepare the shift
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+        run: |
+          set -euo pipefail
+
+          BOT_ID=$(gh api /users/jennifer-barber%5Bbot%5D --jq .id)
+          git config --global user.name  "jennifer-barber[bot]"
+          git config --global user.email "${BOT_ID}+jennifer-barber[bot]@users.noreply.github.com"
+
+          gh api /orgs/committed-nightly --jq .login
+
+          # Nothing to review is a legitimate morning. Say so and stop
+          # rather than inventing work to justify the run.
+          OPEN=$(gh search prs --owner committed-nightly --state open --json number --jq 'length')
+          echo "open PRs: $OPEN"
+
+      - name: Run the shift
+        uses: anthropics/claude-code-action@v1
+        env:
+          SHIFT_NAME: jen
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_SHIFT_LOG: C0BU92BL598
+          SLACK_ORDERS: C0BUCNLPUQ4
+          SLACK_INCIDENTS: C0BUB0WCBJ5
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ steps.token.outputs.token }}
+          prompt: "/day-shift"
+          claude_args: |
+            --max-turns 150
+            --allowedTools "Bash,Read,Write,Edit,Glob,Grep,WebSearch,WebFetch"
