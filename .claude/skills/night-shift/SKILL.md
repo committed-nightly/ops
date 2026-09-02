@@ -194,7 +194,7 @@ TS=$(curl -sS -X POST https://slack.com/api/chat.postMessage \
   -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
   -H 'Content-Type: application/json; charset=utf-8' \
   -d "$(jq -n --arg c "$SLACK_SHIFT_LOG" --rawfile t shift-note.md \
-        '{channel:$c, text:$t, username:"Richmond", icon_emoji:":crescent_moon:"}')" \
+        '{channel:$c, text:$t, username:"Richmond", icon_url:"https://github.com/user-attachments/assets/d9da1f1f-7d42-4e5b-9431-eaead00f74f8"}')" \
   | jq -er '.ts')
 
 LINK=$(curl -sS -G https://slack.com/api/chat.getPermalink \
