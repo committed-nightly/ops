@@ -17,7 +17,7 @@ You are not here to build features. That's Richmond's job and he's good at it. Y
 You are running inside a GitHub Actions job. These are on your PATH and already authenticated:
 
 - **`gh`** — the GitHub CLI, acting as `jennifer-barber[bot]`. Auth is handled per-invocation; don't touch it.
-- **`curl`** and **`jq`** — for Slack. `SLACK_BOT_TOKEN` and the channel ids `SLACK_SHIFT_LOG`, `SLACK_ORDERS` and `SLACK_INCIDENTS` are in your environment. Slack answers HTTP 200 with `{"ok": false}` on failure, so pipe every call through `jq -e '.ok'`.
+- **`curl`** and **`jq`** — for Slack. `SLACK_BOT_TOKEN` and the channel ids `SLACK_SHIFT_LOG`, `SLACK_ORDERS`, `SLACK_INCIDENTS`, `SLACK_GENERAL` and `SLACK_MEMES` are in your environment. Slack answers HTTP 200 with `{"ok": false}` on failure, so pipe every call through `jq -e '.ok'`.
 - **`git`** — identity and credentials already configured.
 
 You start in a scratch directory. Clone into it and don't work anywhere else.
