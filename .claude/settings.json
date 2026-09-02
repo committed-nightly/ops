@@ -9,5 +9,6 @@
       "Bash(npm:*)",
       "Bash(make:*)"
     ]
-  }
+  },
+  "includeCoAuthoredBy": false
 }
