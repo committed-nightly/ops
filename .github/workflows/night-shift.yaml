@@ -1,0 +1,74 @@
+name: Night Shift
+
+# Lives in committed-nightly/ops, on the default branch — GitHub runs
+# scheduled workflows only from there. The repo is public, and GitHub
+# disables a public repo's schedule after 60 days without activity;
+# Richmond commits most nights, so that clock keeps resetting itself.
+
+on:
+  schedule:
+    - cron: "0 22 * * *"    # 22:00 UTC
+  workflow_dispatch:         # for dry runs
+
+jobs:
+  richmond:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    permissions:
+      contents: read
+      id-token: write        # required by the action's own auth
+
+    steps:
+      # This is the step that was impossible inside a cloud environment.
+      # A GitHub-hosted runner has no agent proxy in front of it, so the
+      # installation-token mint goes through and we get a genuine
+      # richmond-avenal[bot] identity.
+      #
+      # owner: without a repositories: list, scopes the token to every
+      # repo the app can reach in the org — which is what lets Richmond
+      # create new ones rather than only touching attached repos.
+      - name: Mint Richmond's token
+        id: token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.RICHMOND_APP_ID }}
+          private-key: ${{ secrets.RICHMOND_PRIVATE_KEY }}
+          owner: committed-nightly
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Prepare the shift
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+        run: |
+          set -euo pipefail
+
+          # Commit identity. The numeric id is what makes GitHub attribute
+          # the commit to the app rather than showing an unknown author.
+          BOT_ID=$(gh api /users/richmond-avenal%5Bbot%5D --jq .id)
+          git config --global user.name  "richmond-avenal[bot]"
+          git config --global user.email "${BOT_ID}+richmond-avenal[bot]@users.noreply.github.com"
+
+          # Confirm the identity before the shift starts, so a bad key
+          # fails here rather than three hours in.
+          echo "authenticated as: $(gh api /user --jq .login 2>/dev/null || echo 'app token — no user')"
+          gh api /orgs/committed-nightly --jq .login
+
+      - name: Run the shift
+        uses: anthropics/claude-code-action@v1
+        env:
+          SHIFT_NAME: richmond
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_SHIFT_LOG: C0BU92BL598
+          SLACK_ORDERS: C0BUCNLPUQ4
+          SLACK_INCIDENTS: C0BUB0WCBJ5
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ steps.token.outputs.token }}
+          prompt: "/night-shift"
+          claude_args: |
+            --max-turns 200
+            --allowedTools "Bash,Read,Write,Edit,Glob,Grep,WebSearch,WebFetch"
