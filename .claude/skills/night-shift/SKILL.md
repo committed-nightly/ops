@@ -75,7 +75,7 @@ Anything the boss posted there in the last day is a strong steer on tonight's wo
 **4. Returned work.**
 
 ```
-gh search prs --owner committed-nightly --state open --review requested-changes
+gh search prs --owner committed-nightly --state open --review changes_requested
 ```
 
 If Jen asked for changes, that work comes first tonight. Answering a review is a real shift's work — it is not a chore standing between you and the fun part.
