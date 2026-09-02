@@ -1,15 +1,13 @@
 {
-  "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "startup|resume",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR\"/scripts/shift-init.sh"
-          }
-        ]
-      }
+  "permissions": {
+    "allow": [
+      "Bash(gh:*)",
+      "Bash(git:*)",
+      "Bash(curl:*)",
+      "Bash(jq:*)",
+      "Bash(go:*)",
+      "Bash(npm:*)",
+      "Bash(make:*)"
     ]
   }
 }
