@@ -40,8 +40,25 @@ jobs:
       - name: Prepare the shift
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
+          SLACK_SHIFT_LOG: ${{ vars.SLACK_SHIFT_LOG }}
+          SLACK_ORDERS: ${{ vars.SLACK_ORDERS }}
+          SLACK_INCIDENTS: ${{ vars.SLACK_INCIDENTS }}
+          SLACK_GENERAL: ${{ vars.SLACK_GENERAL }}
+          SLACK_MEMES: ${{ vars.SLACK_MEMES }}
         run: |
           set -euo pipefail
+
+          # An unset repository variable renders as the empty string, and an
+          # empty channel id is not an error until the shift tries to post --
+          # which is the last thing it does. Fail here instead, thirty seconds
+          # in, rather than after ninety minutes of work with nowhere to file
+          # it. This is the whole reason the ids are read in this step too.
+          for v in SLACK_SHIFT_LOG SLACK_ORDERS SLACK_INCIDENTS SLACK_GENERAL SLACK_MEMES; do
+            if [ -z "${!v}" ]; then
+              echo "::error::repository variable $v is not set. Actions → Variables, on committed-nightly/ops." >&2
+              exit 1
+            fi
+          done
 
           # Look up the bot's numeric id and hand it to the shift as an
           # env var. Do NOT set git config here: the action configures git
@@ -62,9 +79,15 @@ jobs:
         env:
           SHIFT_NAME: jen
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-          SLACK_SHIFT_LOG: C0BU92BL598
-          SLACK_ORDERS: C0BUCNLPUQ4
-          SLACK_INCIDENTS: C0BUB0WCBJ5
+          # Channel ids live in repository variables, not here. They were
+          # duplicated across both workflows and SHIFT_LOG and INCIDENTS had
+          # drifted into each other's slots -- last night's incident report
+          # went to #shift-log. One place to set them, both shifts read it.
+          SLACK_SHIFT_LOG: ${{ vars.SLACK_SHIFT_LOG }}
+          SLACK_ORDERS: ${{ vars.SLACK_ORDERS }}
+          SLACK_INCIDENTS: ${{ vars.SLACK_INCIDENTS }}
+          SLACK_GENERAL: ${{ vars.SLACK_GENERAL }}
+          SLACK_MEMES: ${{ vars.SLACK_MEMES }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ steps.token.outputs.token }}
