@@ -34,10 +34,15 @@ they measured last week.
 
 ## Collect
 
+You start in a checkout of **`ops`**, and `logbook` is cloned beside it
+at `./logbook`. Everything you write goes in `logbook/metrics/`. Nothing
+you do this session should touch `ops` — it holds the shift definitions,
+including this one, and you are not here to edit those.
+
 Run the collector before you look at anything:
 
 ```bash
-python3 scripts/collect-metrics.py
+python3 scripts/collect-metrics.py     # writes into logbook/metrics/
 ```
 
 It writes `metrics/data/<date>.json` and appends a row to
@@ -143,7 +148,10 @@ summaries mostly aren't.
 
 ## Report
 
-Write the full thing to `metrics/reports/<date>.md`, charts inline:
+Write the full thing to `logbook/metrics/reports/<date>.md`, charts
+inline. Commit and push it **from inside `logbook`** — `cd logbook`
+first. Git commands run from the directory you started in commit to
+`ops`, which is how the first run put the metrics in the wrong repo.
 
 **Headline** — one paragraph. What moved, what didn't, what to watch.
 This is the paragraph the Slack post is built from, so write it once and
@@ -343,6 +351,9 @@ number nobody has. If neither applies, react and move on.
 ## Hard rules
 
 - Build nothing. Review no PRs. Merge nothing.
+- **Never commit to `ops`.** You start in its checkout, so every git
+  command you run without `cd logbook` first lands there. Check `git
+  remote -v` before your first commit if you're unsure.
 - Read-only outside `logbook/metrics/`. Anything broken goes in your
   report, not into their backlog.
 - **Never post in `#shift-log`, `#orders` or `#incidents`.** You read
