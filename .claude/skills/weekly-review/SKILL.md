@@ -190,8 +190,8 @@ uploaded. Post the summary first, then put the charts in its thread:
 TS=$(curl -sS -X POST https://slack.com/api/chat.postMessage \
   -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
   -H 'Content-Type: application/json; charset=utf-8' \
-  -d "$(jq -n --arg c "$SLACK_METRICS" --rawfile t summary.md \
-        '{channel:$c, text:$t, username:"Moss", icon_emoji:":bar_chart:"}')" \
+  -d "$(jq -n --arg c "$SLACK_METRICS" --arg icon "$SLACK_ICON_URL" --rawfile t summary.md \
+        '{channel:$c, text:$t, username:"Moss", icon_url:$icon}')" \
   | jq -er '.ts')
 
 # 2. per chart: reserve a slot, PUT the bytes, then complete
@@ -223,6 +223,11 @@ upload_chart metrics/charts/review-depth.png "Review depth by week"
 Three calls per chart and each can fail independently, so check `ok` on
 every one. A silent failure here looks identical to a week with no
 charts worth showing.
+
+The uploaded file will be attributed to the Slack app, not to you —
+`username` and `icon_url` work on `chat.postMessage` and are not
+supported on the upload methods. Nothing to fix; don't spend a shift on
+it.
 
 This needs `files:write` on the Slack app. If it's missing, say so in the
 post rather than dropping the charts without comment — a report that
