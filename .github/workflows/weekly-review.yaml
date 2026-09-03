@@ -1,19 +1,11 @@
-name: Weekly Review
+name: Moss
 
 # Moss. Sundays, after the week has happened.
 #
-# His own GitHub App, installed read-only across the org and writing only
-# to logbook/metrics/, so an observer can't quietly become a participant.
-# That asymmetry is the one that matters and it's enforced by the
-# installation.
-#
-# Slack is the shared app — the shifts and Moss post under different
-# display names from one token. It needs groups:history for the private
-# #shift-log, which is the same scope the night shift needs for threading.
-# #metrics staying out of their reach is a prompt-level rule, not a
-# technical boundary; there was never a way to enforce it in Slack.
-#
-# Replaces the old weekly-review workflow.
+# His app is installed read-only across the org and writes only to
+# logbook/metrics/ — an observer that can change what it observes isn't
+# one. Slack is the shared app; #metrics staying out of the shifts' reach
+# is a prompt rule, not a technical boundary.
 
 on:
   schedule:
@@ -52,7 +44,11 @@ jobs:
           pip install --quiet requests pandas matplotlib
           BOT_ID=$(gh api /users/maurice-moss%5Bbot%5D --jq .id)
           echo "BOT_USER_ID=$BOT_ID" >> "$GITHUB_ENV"
+          echo "BOT_SLUG=maurice-moss" >> "$GITHUB_ENV"
+          echo "BOT_DISPLAY=Moss" >> "$GITHUB_ENV"
+          echo "BOT_ICON=:bar_chart:" >> "$GITHUB_ENV"
           gh api /orgs/committed-nightly --jq .login
+
 
       - name: Run the analysis
         uses: anthropics/claude-code-action@v1
@@ -73,5 +69,6 @@ jobs:
           github_token: ${{ steps.token.outputs.token }}
           prompt: "/weekly-review"
           claude_args: |
+            --model claude-sonnet-5
             --max-turns 150
             --allowedTools "Bash,Read,Write,Edit,Glob,Grep,WebSearch,WebFetch"
