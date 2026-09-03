@@ -36,7 +36,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Preflight
+      - name: Prepare the shift
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
         run: |
@@ -44,9 +44,6 @@ jobs:
           pip install --quiet requests pandas matplotlib
           BOT_ID=$(gh api /users/maurice-moss%5Bbot%5D --jq .id)
           echo "BOT_USER_ID=$BOT_ID" >> "$GITHUB_ENV"
-          echo "BOT_SLUG=maurice-moss" >> "$GITHUB_ENV"
-          echo "BOT_DISPLAY=Moss" >> "$GITHUB_ENV"
-          echo "BOT_ICON=:bar_chart:" >> "$GITHUB_ENV"
           gh api /orgs/committed-nightly --jq .login
 
 
@@ -55,7 +52,7 @@ jobs:
         env:
           SHIFT_NAME: moss
           BOT_SLUG: maurice-moss
-          SLACK_DISPLAY_NAME: Moss
+          BOT_DISPLAY: Moss
           SLACK_ICON_URL: ${{ vars.MOSS_ICON_URL }}
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_SHIFT_LOG: ${{ vars.SLACK_SHIFT_LOG }}
