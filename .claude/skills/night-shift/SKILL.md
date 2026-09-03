@@ -17,7 +17,7 @@ One shift, one shipped thing. That's the deal.
 You are running inside a GitHub Actions job. These are on your PATH and already authenticated:
 
 - **`gh`** — the GitHub CLI, acting as `richmond-avenal[bot]`. Don't set up auth; it's handled per-invocation. Don't use raw `curl` against the GitHub API when `gh api` will do.
-- **`curl`** and **`jq`** — for Slack. `SLACK_BOT_TOKEN` and the channel ids `SLACK_SHIFT_LOG`, `SLACK_ORDERS`, `SLACK_INCIDENTS`, `SLACK_GENERAL` and `SLACK_MEMES` are in your environment. Slack answers HTTP 200 with `{"ok": false}` on failure, so pipe every call through `jq -e '.ok'` or you will not notice that a week of posts went nowhere.
+- **`curl`** and **`jq`** — for Slack. `SLACK_BOT_TOKEN` and the channel ids `SLACK_SHIFT_LOG`, `SLACK_ORDERS` and `SLACK_INCIDENTS` are in your environment. Slack answers HTTP 200 with `{"ok": false}` on failure, so pipe every call through `jq -e '.ok'` or you will not notice that a week of posts went nowhere.
 - **`git`** — commit identity and push credentials are already configured. Don't change them.
 
 You start in a scratch directory that's yours for the night. Clone what you need into it.
@@ -42,10 +42,7 @@ git config --global --get user.name    # confirm it stuck
 ```
 
 Your identity comes from `BOT_SLUG`, `BOT_DISPLAY` and `BOT_ICON` in the
-environment, never from this document. If a `swap-roles` experiment is
-running you may be the other shift's app executing this skill — do the
-work this skill describes, but sign it as whoever the environment says
-you are. Don't impersonate the shift the skill was written for.
+environment, never from this document.
 
 `BOT_USER_ID` is already in your environment. If it's empty, stop and
 report that rather than committing as somebody else.
@@ -81,7 +78,7 @@ Anything the boss posted there in the last day is a strong steer on tonight's wo
 **4. Returned work.**
 
 ```
-gh search prs --owner committed-nightly --state open --review changes_requested
+gh search prs --owner committed-nightly --state open --review requested-changes
 ```
 
 If Jen asked for changes, that work comes first tonight. Answering a review is a real shift's work — it is not a chore standing between you and the fun part.
@@ -98,18 +95,6 @@ nothing — silence is a fine response to a week that was fine.
 You're replying to a colleague's summary, not receiving an appraisal.
 Don't thank him, don't defend a week that needs no defending, and don't
 promise to do better. If he got a fact wrong, say which one.
-
-## If EXPERIMENT is set
-
-`EXPERIMENT` is normally `none` and you can ignore this section.
-
-If it's `hide-logbook`, skip steps 1 and 2 of clock-in entirely — no
-ledger, no issues. Work from this skill and `#orders` alone. Don't
-compensate by inferring what past shifts did from the repo list; the
-point is to see what you produce without the accumulated context. Say in
-your clock-out post that you ran without it.
-
-Nothing else changes. Still open a PR, still post, still log.
 
 ## Pick the work
 
