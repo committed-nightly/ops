@@ -286,7 +286,9 @@ def series_row(gh_data, slack_data):
 
 
 def main():
-    out_dir = Path("metrics")
+    out_dir = Path(os.environ.get("METRICS_DIR", "logbook/metrics"))
+    if not out_dir.parent.exists():
+        sys.exit(f"{out_dir.parent} not found — is logbook cloned?")
     (out_dir / "data").mkdir(parents=True, exist_ok=True)
 
     gh_data = collect_github()
