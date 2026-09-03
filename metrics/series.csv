@@ -1,0 +1,2 @@
+date,shifts_logged,no_work_shifts,prs_opened,prs_merged,prs_sent_back,review_rounds_mean,line_comments_total,repos_total,repos_created,repos_stale_14d,hours_to_merge_mean,hours_to_review_mean,workflow_failures,logbook_issues_open,disagreement_candidates,self_correction_candidates
+2026-09-03,3,0,3,2,1,1.67,9,5,5,0,4.4,0.2,0,7,3,1

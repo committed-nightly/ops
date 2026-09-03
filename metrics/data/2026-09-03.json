@@ -1,0 +1,699 @@
+{
+  "collected_at": "2026-09-03T10:03:55.765009+00:00",
+  "window_days": 7,
+  "github": {
+    "repos": [
+      {
+        "name": "logbook",
+        "created_at": "2026-09-01T19:16:08Z",
+        "pushed_at": "2026-09-03T00:10:50Z",
+        "days_since_push": 0,
+        "archived": false,
+        "private": true,
+        "has_description": true,
+        "has_license": false,
+        "topics": [
+          "append-only",
+          "ledger",
+          "logbook",
+          "operations"
+        ],
+        "open_issues": 7,
+        "created_this_window": true
+      },
+      {
+        "name": "ops",
+        "created_at": "2026-09-01T21:45:52Z",
+        "pushed_at": "2026-09-03T09:20:49Z",
+        "days_since_push": 0,
+        "archived": false,
+        "private": false,
+        "has_description": true,
+        "has_license": false,
+        "topics": [
+          "automation",
+          "claude-code",
+          "github-actions"
+        ],
+        "open_issues": 0,
+        "created_this_window": true
+      },
+      {
+        "name": "append-only",
+        "created_at": "2026-09-02T08:57:45Z",
+        "pushed_at": "2026-09-02T17:44:40Z",
+        "days_since_push": 0,
+        "archived": false,
+        "private": false,
+        "has_description": true,
+        "has_license": true,
+        "topics": [
+          "audit",
+          "changelog",
+          "ci",
+          "cli",
+          "git",
+          "python"
+        ],
+        "open_issues": 0,
+        "created_this_window": true
+      },
+      {
+        "name": "lockstep",
+        "created_at": "2026-09-02T17:56:02Z",
+        "pushed_at": "2026-09-02T18:12:18Z",
+        "days_since_push": 0,
+        "archived": false,
+        "private": false,
+        "has_description": true,
+        "has_license": true,
+        "topics": [
+          "ci",
+          "cli",
+          "codegen",
+          "git",
+          "lockfile",
+          "python"
+        ],
+        "open_issues": 0,
+        "created_this_window": true
+      },
+      {
+        "name": "blamecheck",
+        "created_at": "2026-09-02T23:58:58Z",
+        "pushed_at": "2026-09-03T00:08:58Z",
+        "days_since_push": 0,
+        "archived": false,
+        "private": false,
+        "has_description": true,
+        "has_license": true,
+        "topics": [
+          "ci",
+          "cli",
+          "code-formatting",
+          "developer-tools",
+          "git",
+          "git-blame",
+          "python"
+        ],
+        "open_issues": 1,
+        "created_this_window": true
+      }
+    ],
+    "prs": [
+      {
+        "repo": "append-only",
+        "number": 1,
+        "author": "richmond-avenal[bot]",
+        "created_at": "2026-09-02T09:07:23Z",
+        "merged": true,
+        "state": "closed",
+        "review_count": 3,
+        "review_states": [
+          "CHANGES_REQUESTED",
+          "CHANGES_REQUESTED",
+          "APPROVED"
+        ],
+        "sent_back": 2,
+        "rounds": 3,
+        "line_comments": 9,
+        "hours_to_first_review": 0.3,
+        "hours_to_merge": 8.62,
+        "hours_open": 8.62,
+        "in_window": true
+      },
+      {
+        "repo": "lockstep",
+        "number": 1,
+        "author": "richmond-avenal[bot]",
+        "created_at": "2026-09-02T18:05:38Z",
+        "merged": true,
+        "state": "closed",
+        "review_count": 1,
+        "review_states": [
+          "APPROVED"
+        ],
+        "sent_back": 0,
+        "rounds": 1,
+        "line_comments": 0,
+        "hours_to_first_review": 0.11,
+        "hours_to_merge": 0.11,
+        "hours_open": 0.11,
+        "in_window": true
+      },
+      {
+        "repo": "blamecheck",
+        "number": 1,
+        "author": "richmond-avenal[bot]",
+        "created_at": "2026-09-03T00:09:42Z",
+        "merged": false,
+        "state": "open",
+        "review_count": 0,
+        "review_states": [],
+        "sent_back": 0,
+        "rounds": 1,
+        "line_comments": 0,
+        "hours_to_first_review": null,
+        "hours_to_merge": null,
+        "hours_open": 9.9,
+        "in_window": true
+      }
+    ],
+    "workflow_runs": [
+      {
+        "name": "Moss",
+        "conclusion": null,
+        "created_at": "2026-09-03T10:03:18Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33742222132"
+      },
+      {
+        "name": "CodeQL",
+        "conclusion": "success",
+        "created_at": "2026-09-03T09:24:26Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33738656983"
+      },
+      {
+        "name": "Push on main",
+        "conclusion": "success",
+        "created_at": "2026-09-03T09:20:51Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33738324620"
+      },
+      {
+        "name": "Push on main",
+        "conclusion": "success",
+        "created_at": "2026-09-03T09:20:19Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33738276152"
+      },
+      {
+        "name": "Push on main",
+        "conclusion": "success",
+        "created_at": "2026-09-03T09:19:59Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33738243097"
+      },
+      {
+        "name": "Push on main",
+        "conclusion": "success",
+        "created_at": "2026-09-03T09:19:21Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33738184528"
+      },
+      {
+        "name": "Push on main",
+        "conclusion": "success",
+        "created_at": "2026-09-03T08:49:08Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33735414885"
+      },
+      {
+        "name": "Push on main",
+        "conclusion": "success",
+        "created_at": "2026-09-03T08:47:14Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33735242872"
+      },
+      {
+        "name": "Push on main",
+        "conclusion": "success",
+        "created_at": "2026-09-03T08:45:29Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33735087069"
+      },
+      {
+        "name": "Push on main",
+        "conclusion": "success",
+        "created_at": "2026-09-03T08:44:50Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33735023274"
+      },
+      {
+        "name": "Push on main",
+        "conclusion": "success",
+        "created_at": "2026-09-03T08:42:06Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33734774035"
+      },
+      {
+        "name": "Push on main",
+        "conclusion": "success",
+        "created_at": "2026-09-03T08:41:08Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33734686666"
+      },
+      {
+        "name": "Push on main",
+        "conclusion": "success",
+        "created_at": "2026-09-03T08:32:09Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33733878068"
+      },
+      {
+        "name": "Push on main",
+        "conclusion": "success",
+        "created_at": "2026-09-03T08:30:47Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33733751155"
+      },
+      {
+        "name": "Push on main",
+        "conclusion": "success",
+        "created_at": "2026-09-03T08:27:51Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33733481493"
+      },
+      {
+        "name": "Push on main",
+        "conclusion": "success",
+        "created_at": "2026-09-03T08:09:57Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33731884661"
+      },
+      {
+        "name": "Push on main",
+        "conclusion": "success",
+        "created_at": "2026-09-03T07:55:11Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33730587860"
+      },
+      {
+        "name": "Push on main",
+        "conclusion": "success",
+        "created_at": "2026-09-03T07:54:33Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33730532040"
+      },
+      {
+        "name": "Night Shift",
+        "conclusion": "success",
+        "created_at": "2026-09-02T23:54:37Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33697199055"
+      },
+      {
+        "name": "Push on main",
+        "conclusion": "success",
+        "created_at": "2026-09-02T18:14:00Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33665947532"
+      },
+      {
+        "name": "Day Shift",
+        "conclusion": "success",
+        "created_at": "2026-09-02T18:08:27Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33665377097"
+      },
+      {
+        "name": "Night Shift",
+        "conclusion": "success",
+        "created_at": "2026-09-02T17:52:42Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33663776660"
+      },
+      {
+        "name": "Day Shift",
+        "conclusion": "success",
+        "created_at": "2026-09-02T17:40:41Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33662552644"
+      },
+      {
+        "name": "Push on main",
+        "conclusion": "success",
+        "created_at": "2026-09-02T17:22:54Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33660708453"
+      },
+      {
+        "name": "Push on main",
+        "conclusion": "success",
+        "created_at": "2026-09-02T17:22:12Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33660633672"
+      },
+      {
+        "name": "CodeQL Setup",
+        "conclusion": "success",
+        "created_at": "2026-09-02T17:02:47Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33658640419"
+      },
+      {
+        "name": "Night Shift",
+        "conclusion": "success",
+        "created_at": "2026-09-02T16:47:36Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33657090284"
+      },
+      {
+        "name": "Day Shift",
+        "conclusion": "success",
+        "created_at": "2026-09-02T15:25:27Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33648442942"
+      },
+      {
+        "name": "Day Shift",
+        "conclusion": "success",
+        "created_at": "2026-09-02T15:14:20Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33647242864"
+      },
+      {
+        "name": "Day Shift",
+        "conclusion": "success",
+        "created_at": "2026-09-02T14:42:12Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33643769762"
+      },
+      {
+        "name": "Night Shift",
+        "conclusion": "success",
+        "created_at": "2026-09-02T14:12:03Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33640500758"
+      },
+      {
+        "name": "Day Shift",
+        "conclusion": "success",
+        "created_at": "2026-09-02T12:41:42Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33631361719"
+      },
+      {
+        "name": "Day Shift",
+        "conclusion": "success",
+        "created_at": "2026-09-02T09:19:15Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33613454519"
+      },
+      {
+        "name": "Night Shift",
+        "conclusion": "success",
+        "created_at": "2026-09-02T08:54:14Z",
+        "url": "https://github.com/committed-nightly/ops/actions/runs/33611202737"
+      }
+    ],
+    "logbook_issues": [
+      {
+        "number": 11,
+        "title": "night-shift SKILL.md documents an invalid gh flag value for finding returned work",
+        "state": "closed",
+        "age_days": 0,
+        "labels": []
+      },
+      {
+        "number": 10,
+        "title": "git push/pull fails in the scratch directory: credentials are scoped to the ops checkout only",
+        "state": "open",
+        "age_days": 0,
+        "labels": []
+      },
+      {
+        "number": 9,
+        "title": "logbook/main has no branch protection and can't have any while the repo is private",
+        "state": "open",
+        "age_days": 0,
+        "labels": []
+      },
+      {
+        "number": 8,
+        "title": "Jen can't open a PR or set Actions variables: Dan's #orders change is pushed but blocked",
+        "state": "closed",
+        "age_days": 0,
+        "labels": []
+      },
+      {
+        "number": 7,
+        "title": "Day Shift can run twice against the same state (late cron lands after a manual dispatch)",
+        "state": "open",
+        "age_days": 0,
+        "labels": []
+      },
+      {
+        "number": 6,
+        "title": "Shifts can't produce a session transcript link (CLAUDE_CODE_REMOTE_SESSION_ID is empty)",
+        "state": "open",
+        "age_days": 1,
+        "labels": []
+      },
+      {
+        "number": 5,
+        "title": "ops is public with no README and no LICENSE",
+        "state": "open",
+        "age_days": 1,
+        "labels": []
+      },
+      {
+        "number": 4,
+        "title": "SHIFTS.md was truncated: the flakehunt entry is gone, and so is the flakehunt repo",
+        "state": "open",
+        "age_days": 1,
+        "labels": []
+      },
+      {
+        "number": 3,
+        "title": "Decide whether SHIFTS.md is strictly append-only, then enforce it",
+        "state": "open",
+        "age_days": 1,
+        "labels": []
+      },
+      {
+        "number": 2,
+        "title": "Bot cannot read #shift-log (missing Slack scope)",
+        "state": "closed",
+        "age_days": 1,
+        "labels": []
+      }
+    ],
+    "excerpts": []
+  },
+  "slack": {
+    "channels": {
+      "shift-log": [
+        {
+          "ts": "1788394240.602929",
+          "at": "2026-09-03T00:10:40.602929+00:00",
+          "author": "Richmond",
+          "chars": 2866,
+          "threaded": false,
+          "reply_count": 0,
+          "outcome": null
+        },
+        {
+          "ts": "1788372404.989459",
+          "at": "2026-09-02T18:06:44.989459+00:00",
+          "author": "Richmond",
+          "chars": 2500,
+          "threaded": false,
+          "reply_count": 1,
+          "outcome": null
+        },
+        {
+          "ts": "1788368037.293809",
+          "at": "2026-09-02T16:53:57.293809+00:00",
+          "author": "Richmond",
+          "chars": 3083,
+          "threaded": false,
+          "reply_count": 1,
+          "outcome": null
+        },
+        {
+          "ts": "1788359561.395039",
+          "at": "2026-09-02T14:32:41.395039+00:00",
+          "author": "Richmond",
+          "chars": 3153,
+          "threaded": false,
+          "reply_count": 4,
+          "outcome": "closed"
+        },
+        {
+          "ts": "1788341291.341339",
+          "at": "2026-09-02T09:28:11.341339+00:00",
+          "author": "Jen",
+          "chars": 2888,
+          "threaded": false,
+          "reply_count": 0,
+          "outcome": "merged"
+        },
+        {
+          "ts": "1788340091.326719",
+          "at": "2026-09-02T09:08:11.326719+00:00",
+          "author": "Richmond",
+          "chars": 3056,
+          "threaded": false,
+          "reply_count": 1,
+          "outcome": "shipped-for-review"
+        },
+        {
+          "ts": "1788302133.677219",
+          "at": "2026-09-01T22:35:33.677219+00:00",
+          "author": "Richmond",
+          "chars": 53,
+          "threaded": false,
+          "reply_count": 0,
+          "outcome": null
+        },
+        {
+          "ts": "1788300618.312429",
+          "at": "2026-09-01T22:10:18.312429+00:00",
+          "author": "U0BUDKWRHRS",
+          "chars": 37,
+          "threaded": false,
+          "reply_count": 0,
+          "outcome": null
+        },
+        {
+          "ts": "1788292887.597049",
+          "at": "2026-09-01T20:01:27.597049+00:00",
+          "author": "U0BV36FJV8Q",
+          "chars": 37,
+          "threaded": false,
+          "reply_count": 0,
+          "outcome": null
+        }
+      ],
+      "orders": [
+        {
+          "ts": "1788371147.667619",
+          "at": "2026-09-02T17:45:47.667619+00:00",
+          "author": "Jen",
+          "chars": 440,
+          "threaded": false,
+          "reply_count": 0,
+          "outcome": null
+        },
+        {
+          "ts": "1788369831.922439",
+          "at": "2026-09-02T17:23:51.922439+00:00",
+          "author": "U0BV36FJV8Q",
+          "chars": 201,
+          "threaded": false,
+          "reply_count": 0,
+          "outcome": null
+        },
+        {
+          "ts": "1788369500.946959",
+          "at": "2026-09-02T17:18:20.946959+00:00",
+          "author": "U0BV36FJV8Q",
+          "chars": 76,
+          "threaded": false,
+          "reply_count": 0,
+          "outcome": null
+        },
+        {
+          "ts": "1788363031.031809",
+          "at": "2026-09-02T15:30:31.031809+00:00",
+          "author": "Jen",
+          "chars": 1696,
+          "threaded": false,
+          "reply_count": 0,
+          "outcome": null
+        },
+        {
+          "ts": "1788358692.166169",
+          "at": "2026-09-02T14:18:12.166169+00:00",
+          "author": "U0BV36FJV8Q",
+          "chars": 363,
+          "threaded": false,
+          "reply_count": 3,
+          "outcome": null
+        },
+        {
+          "ts": "1788300615.517749",
+          "at": "2026-09-01T22:10:15.517749+00:00",
+          "author": "U0BUDKWRHRS",
+          "chars": 37,
+          "threaded": false,
+          "reply_count": 0,
+          "outcome": null
+        },
+        {
+          "ts": "1788292909.745589",
+          "at": "2026-09-01T20:01:49.745589+00:00",
+          "author": "U0BV36FJV8Q",
+          "chars": 37,
+          "threaded": false,
+          "reply_count": 0,
+          "outcome": null
+        }
+      ],
+      "incidents": [
+        {
+          "ts": "1788302168.258369",
+          "at": "2026-09-01T22:36:08.258369+00:00",
+          "author": "Richmond",
+          "chars": 2501,
+          "threaded": false,
+          "reply_count": 1,
+          "outcome": "no-work"
+        },
+        {
+          "ts": "1788300610.243099",
+          "at": "2026-09-01T22:10:10.243099+00:00",
+          "author": "U0BUDKWRHRS",
+          "chars": 37,
+          "threaded": false,
+          "reply_count": 0,
+          "outcome": null
+        },
+        {
+          "ts": "1788292939.797329",
+          "at": "2026-09-01T20:02:19.797329+00:00",
+          "author": "U0BV36FJV8Q",
+          "chars": 37,
+          "threaded": false,
+          "reply_count": 0,
+          "outcome": null
+        }
+      ],
+      "general": [
+        {
+          "ts": "1788358475.014779",
+          "at": "2026-09-02T14:14:35.014779+00:00",
+          "author": "U0BUDKWRHRS",
+          "chars": 37,
+          "threaded": false,
+          "reply_count": 0,
+          "outcome": null
+        },
+        {
+          "ts": "1788290939.503059",
+          "at": "2026-09-01T19:28:59.503059+00:00",
+          "author": "U0BV36FJV8Q",
+          "chars": 37,
+          "threaded": false,
+          "reply_count": 0,
+          "outcome": null
+        }
+      ],
+      "memes": [
+        {
+          "ts": "1788394285.402619",
+          "at": "2026-09-03T00:11:25.402619+00:00",
+          "author": "Richmond",
+          "chars": 510,
+          "threaded": false,
+          "reply_count": 0,
+          "outcome": null
+        },
+        {
+          "ts": "1788358504.964069",
+          "at": "2026-09-02T14:15:04.964069+00:00",
+          "author": "U0BUDKWRHRS",
+          "chars": 37,
+          "threaded": false,
+          "reply_count": 0,
+          "outcome": null
+        },
+        {
+          "ts": "1788358488.455709",
+          "at": "2026-09-02T14:14:48.455709+00:00",
+          "author": "U0BV36FJV8Q",
+          "chars": 37,
+          "threaded": false,
+          "reply_count": 0,
+          "outcome": null
+        }
+      ]
+    },
+    "excerpts": [
+      {
+        "kind": "disagreement",
+        "source": "slack/shift-log",
+        "author": "Richmond",
+        "excerpt": "edy is the lenient direction, so it shouldn't invent violations\" \u2014 was wrong, and I've struck it through in the PR body rather than quietly deleting it. Greedy leftmost is complete for subsequence *membership*, so \"did this parent survive\" is exact; the *positions* it hands back are one embedding of many, and the coverage loop inherits t"
+      },
+      {
+        "kind": "disagreement",
+        "source": "slack/shift-log",
+        "author": "Richmond",
+        "excerpt": "is the lenient direction so it won't invent violations, but a duplicate-heavy ledger is where I'd expect to be wrong.\n\u2022 I deviated from Jen's `--after` wording in one place and think I'm right: the marker is the first *entry* line, not the last preamble line. Matching a separator falls apart on files that don't have one.\n\n*Left"
+      },
+      {
+        "kind": "disagreement",
+        "source": "slack/orders",
+        "author": "Jen",
+        "excerpt": "On the workflow order \u2014 done in <https://github.com/committed-nightly/ops/pull/3|ops#3>, with one change I want to flag rather than quietly make.\n\n*The first and third ids are crossed.* `C0BUB0WCBJ5` is `#incidents` and `C0BU92BL598` is `#shift-log`, not the other way round. Slack names them itself: `<http://conversations.info|conversati"
+      },
+      {
+        "kind": "self_correction",
+        "source": "slack/orders",
+        "author": "Jen",
+        "excerpt": "ightly/ops` \u2192 Actions \u2192 Variables. Table's in the PR.\n\u2022 Approve and merge it. I wrote it, so I'm not approving it \u2014 and I got the values wrong in the first version of that PR before checking them, which is its own argument for a second pair of eyes.\n\nOrder of operations matters: variables first, then merge. The other way round and both shif"
+      }
+    ],
+    "errors": []
+  }
+}

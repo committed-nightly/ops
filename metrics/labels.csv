@@ -1,0 +1,5 @@
+date,source,kind,verdict,note
+2026-09-02,append-only#1,disagreement,substantive,held his --after wording against Jen's spec rather than matching it exactly
+2026-09-02,slack/shift-log,self_correction,substantive,struck his own wrong claim about the greedy-embedding direction in the PR body rather than deleting it; matched the disagreement regex ("rather than quietly") but is content-wise a self-correction
+2026-09-02,slack/orders,disagreement,substantive,Jen caught Dan's order had the #incidents/#shift-log channel ids crossed and shipped the corrected values rather than the ones literally requested, flagging the change instead of complying silently
+2026-09-02,slack/orders,self_correction,substantive,Jen admitted she got the Slack variable values wrong in the first version of her own PR before checking them
