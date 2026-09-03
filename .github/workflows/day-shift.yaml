@@ -1,4 +1,4 @@
-name: Day Shift
+name: Jen
 
 # Lives in committed-nightly/ops alongside the night shift, on the
 # default branch.
@@ -20,11 +20,8 @@ jobs:
       id-token: write
 
     steps:
-      # Jen's own app, and this is the whole reason the design works
-      # again: two distinct installation tokens mean two distinct
-      # identities, so GitHub will accept jennifer-barber[bot]'s approval on a PR
-      # authored by richmond-avenal[bot]. Branch protection can go back to
-      # required_approving_review_count: 1 and actually mean it.
+      # A separate app from Richmond's, so GitHub accepts her approval
+      # on his PR and required_approving_review_count: 1 works.
       - name: Mint Jen's token
         id: token
         uses: actions/create-github-app-token@v2
@@ -40,37 +37,20 @@ jobs:
       - name: Prepare the shift
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
-          SLACK_SHIFT_LOG: ${{ vars.SLACK_SHIFT_LOG }}
-          SLACK_ORDERS: ${{ vars.SLACK_ORDERS }}
-          SLACK_INCIDENTS: ${{ vars.SLACK_INCIDENTS }}
-          SLACK_GENERAL: ${{ vars.SLACK_GENERAL }}
-          SLACK_MEMES: ${{ vars.SLACK_MEMES }}
         run: |
           set -euo pipefail
 
-          # An unset repository variable renders as the empty string, and an
-          # empty channel id is not an error until the shift tries to post --
-          # which is the last thing it does. Fail here instead, thirty seconds
-          # in, rather than after ninety minutes of work with nowhere to file
-          # it. This is the whole reason the ids are read in this step too.
-          for v in SLACK_SHIFT_LOG SLACK_ORDERS SLACK_INCIDENTS SLACK_GENERAL SLACK_MEMES; do
-            if [ -z "${!v}" ]; then
-              echo "::error::repository variable $v is not set. Actions → Variables, on committed-nightly/ops." >&2
-              exit 1
-            fi
-          done
-
-          # Look up the bot's numeric id and hand it to the shift as an
-          # env var. Do NOT set git config here: the action configures git
-          # as claude[bot] AFTER this step runs, so anything set now is
-          # overwritten. Jen sets her own identity at clock-in.
+          # Don't set git config here — the action overwrites it with
+          # claude[bot] afterwards. Jen sets her own at clock-in.
           BOT_ID=$(gh api /users/jennifer-barber%5Bbot%5D --jq .id)
           echo "BOT_USER_ID=$BOT_ID" >> "$GITHUB_ENV"
+          echo "BOT_SLUG=jennifer-barber" >> "$GITHUB_ENV"
+          echo "BOT_DISPLAY=Jen" >> "$GITHUB_ENV"
+          echo "BOT_ICON=:sunny:" >> "$GITHUB_ENV"
 
           gh api /orgs/committed-nightly --jq .login
 
-          # Nothing to review is a legitimate morning. Say so and stop
-          # rather than inventing work to justify the run.
+          # Nothing to review is a legitimate morning.
           OPEN=$(gh search prs --owner committed-nightly --state open --json number --jq 'length')
           echo "open PRs: $OPEN"
 
@@ -78,11 +58,11 @@ jobs:
         uses: anthropics/claude-code-action@v1
         env:
           SHIFT_NAME: jen
+          BOT_SLUG: jennifer-barber
+          SLACK_DISPLAY_NAME: Jen
+          SLACK_ICON_URL: ${{ vars.JEN_ICON_URL }}
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-          # Channel ids live in repository variables, not here. They were
-          # duplicated across both workflows and SHIFT_LOG and INCIDENTS had
-          # drifted into each other's slots -- last night's incident report
-          # went to #shift-log. One place to set them, both shifts read it.
+          # From vars — these were crossed once already.
           SLACK_SHIFT_LOG: ${{ vars.SLACK_SHIFT_LOG }}
           SLACK_ORDERS: ${{ vars.SLACK_ORDERS }}
           SLACK_INCIDENTS: ${{ vars.SLACK_INCIDENTS }}
