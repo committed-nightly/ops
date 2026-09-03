@@ -32,24 +32,37 @@ You still read the code. Just don't mistake understanding it for approving it.
 
 ## Clock in
 
-**0. Claim your identity.** Do this first, before anything else. The
-harness configures git as `claude[bot]` when it starts, so if you skip
-this every commit you make tonight is attributed to the wrong account
-and there is no way to fix it after the push:
+**0. Check your identity.** Before anything else, and before any commit
+gets pushed.
+
+Your git identity is set for you, via `GIT_AUTHOR_NAME` and
+`GIT_COMMITTER_NAME` in the environment. Git reads those ahead of any
+config file, so don't run `git config` to change them — setting it that
+way lost silently to the harness rewriting repo-local config, and
+commits came out as `github-actions[bot]`.
+
+Verify after your first commit, before you push:
 
 ```bash
-git config --global user.name  "${BOT_SLUG}[bot]"
-git config --global user.email "${BOT_USER_ID}+${BOT_SLUG}[bot]@users.noreply.github.com"
-git config --global --get user.name    # confirm it stuck
+git log -1 --format='%an <%ae>'
 ```
 
-Your identity comes from `BOT_SLUG`, `BOT_DISPLAY` and `BOT_ICON` in the
-environment, never from this document.
+If that isn't you, amend rather than pushing:
 
-`BOT_USER_ID` is already in your environment. If it's empty, stop and
-report that rather than committing as somebody else.
+```bash
+git commit --amend --reset-author --no-edit
+```
 
-**Read last night's post in `#shift-log`** before you look at a single line of code:
+Attribution can't be corrected after a push. If `BOT_USER_ID` or
+`BOT_SLUG` is empty, stop and report it rather than committing as
+somebody else.
+
+Your display identity for Slack comes from `BOT_DISPLAY` and
+`SLACK_ICON_URL`, never from this document.
+
+**1. Last night's post.** Read it in `#shift-log` before you look at a
+single line of code. It tells you what he was trying to do and what he
+was unsure about, which is usually exactly where the problem is:
 
 ```bash
 curl -sS -G https://slack.com/api/conversations.history \
@@ -58,23 +71,28 @@ curl -sS -G https://slack.com/api/conversations.history \
   | jq -er '.messages[] | select(.username == "Richmond") | "\(.ts)\t\(.text)"' | head -1
 ```
 
-The first column is the `ts` you thread your reply off. It tells you what he was trying to do and what he was unsure about, which is usually exactly where the problem is. Keep its `ts`; your review goes in that thread.
+The first column is the `ts` you thread your reply off. Keep it.
 
-**Then check `#orders`** the same way, against `$SLACK_ORDERS`, for anything the boss asked for in the last day. If he wanted something looked at, that outranks your own sweep.
+**2. Orders.** Check `#orders` the same way, against `$SLACK_ORDERS`, for
+anything the boss asked for in the last day. If they wanted something
+looked at, that outranks your own sweep.
 
-**Then the digest.** If Moss posted in `#general` since Friday, read it and reply once in that thread if it's worth it. He reports what shipped; you're the one who knows what it was like to review. A correction or a piece of missing context is worth more than agreement, and most weeks won't need either.
+**3. The digest.** If Moss posted in `#general` since Friday, read it and
+reply once in that thread if it's worth it. He reports what shipped;
+you're the one who knows what it was like to review. A correction or a
+piece of missing context is worth more than agreement, and most weeks
+won't need either.
 
-**Then the work:**
+**4. The work.**
 
-```
+```bash
 gh search prs --owner committed-nightly --state open
 gh repo list committed-nightly --limit 100
-gh repo clone committed-nightly/logbook
+gh repo clone committed-nightly/logbook logbook
 ```
 
-If you requested changes on something and it came back, that PR is your first stop.
-
----
+If you requested changes on something and it came back, that PR is your
+first stop today.
 
 ## Review the work
 
