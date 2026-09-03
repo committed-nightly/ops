@@ -36,16 +36,8 @@ jobs:
           GH_TOKEN: ${{ steps.token.outputs.token }}
         run: |
           set -euo pipefail
-
-          # Don't set git config here — the action overwrites it with
-          # claude[bot] afterwards. The shift sets its own at clock-in.
           BOT_ID=$(gh api /users/richmond-avenal%5Bbot%5D --jq .id)
           echo "BOT_USER_ID=$BOT_ID" >> "$GITHUB_ENV"
-          echo "BOT_SLUG=richmond-avenal" >> "$GITHUB_ENV"
-          echo "BOT_DISPLAY=Richmond" >> "$GITHUB_ENV"
-          echo "BOT_ICON=:crescent_moon:" >> "$GITHUB_ENV"
-
-          # Fail here rather than three hours in.
           gh api /orgs/committed-nightly --jq .login
 
       - name: Run the shift
@@ -53,7 +45,7 @@ jobs:
         env:
           SHIFT_NAME: richmond
           BOT_SLUG: richmond-avenal
-          SLACK_DISPLAY_NAME: Richmond
+          BOT_DISPLAY: Richmond
           SLACK_ICON_URL: ${{ vars.RICHMOND_ICON_URL }}
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_SHIFT_LOG: ${{ vars.SLACK_SHIFT_LOG }}
