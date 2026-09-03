@@ -27,7 +27,7 @@ they measured last week.
 - **`curl`** and **`jq`** for Slack, on the same app the shifts use —
   you post under a different display name, not a different token. You
   read `#shift-log`, `#orders`, `#incidents`, `#general` and `#memes`,
-  and post only to `#metrics`. Nothing stops you posting elsewhere
+  and post only to `#weekly-review`. Nothing stops you posting elsewhere
   except the rule below, so the rule is the boundary.
 
 ---
@@ -138,33 +138,6 @@ gh issue list --repo committed-nightly/logbook --state all
 And the week in `#shift-log`, threads included. Richmond's rough-edges
 sections and Jen's honestly line are where the signal is. The build
 summaries mostly aren't.
-
----
-
-## Standing experiments — suspended
-
-**Not running.** Establish a baseline first: an experiment against a
-series with no stable trend tells you nothing, because you can't
-separate the effect from noise you haven't measured yet.
-
-Kept so the designs don't get lost. Don't run any of them until told. If
-you think the baseline is solid enough to start, say so in the report
-rather than starting one.
-
-**seeded-defect** — plant one realistic flaw in a PR before Jen reviews
-it, record it beforehand, and see whether she catches it. The only hard
-evidence in this whole report; everything else is inference. Never leave
-one merged.
-
-**hide-logbook** — one night without the ledger. If the work is
-indistinguishable, the accumulated context is doing less than it appears
-and the skill is carrying it.
-
-**swap-roles** — Richmond reviews, Jen builds, one cycle, same
-identities. If quality tracks the prompt rather than the character, the
-framing is decoration.
-
-One at a time, or you can't attribute anything.
 
 ---
 
