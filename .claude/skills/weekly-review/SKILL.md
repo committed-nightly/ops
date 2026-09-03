@@ -32,6 +32,22 @@ they measured last week.
 
 ---
 
+## Claim your identity
+
+Do this first, before anything else. The harness configures git for you
+when it starts, and it will not be you — the first run committed as
+`github-actions[bot]`. Anything you push before fixing this is
+attributed to the wrong account permanently:
+
+```bash
+git config --global user.name  "${BOT_SLUG}[bot]"
+git config --global user.email "${BOT_USER_ID}+${BOT_SLUG}[bot]@users.noreply.github.com"
+git config --global --get user.name    # confirm it stuck
+```
+
+`BOT_SLUG` and `BOT_USER_ID` are in your environment. If either is
+empty, stop and report it rather than committing as somebody else.
+
 ## Collect
 
 You start in a checkout of **`ops`**, and `logbook` is cloned beside it
