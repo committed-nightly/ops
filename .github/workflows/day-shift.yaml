@@ -1,10 +1,5 @@
 name: Jen
 
-# Lives in committed-nightly/ops alongside the night shift, on the
-# default branch.
-# Ten hours after Richmond clocks in, so a long build can't overlap the
-# review of it.
-
 on:
   schedule:
     - cron: "0 8 * * *"     # 08:00 UTC
@@ -20,8 +15,6 @@ jobs:
       id-token: write
 
     steps:
-      # A separate app from Richmond's, so GitHub accepts her approval
-      # on his PR and required_approving_review_count: 1 works.
       - name: Mint Jen's token
         id: token
         uses: actions/create-github-app-token@v2
@@ -34,7 +27,7 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Prepare the shift
+      - name: Preflight
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
         run: |
@@ -42,6 +35,15 @@ jobs:
 
           BOT_ID=$(gh api /users/jennifer-barber%5Bbot%5D --jq .id)
           echo "BOT_USER_ID=$BOT_ID" >> "$GITHUB_ENV"
+
+          EMAIL="$BOT_ID+jennifer-barber[bot]@users.noreply.github.com"
+          {
+            echo "GIT_AUTHOR_NAME=jennifer-barber[bot]"
+            echo "GIT_AUTHOR_EMAIL=$EMAIL"
+            echo "GIT_COMMITTER_NAME=jennifer-barber[bot]"
+            echo "GIT_COMMITTER_EMAIL=$EMAIL"
+          } >> "$GITHUB_ENV"
+
           gh api /orgs/committed-nightly --jq .login
 
           # Nothing to review is a legitimate morning.
