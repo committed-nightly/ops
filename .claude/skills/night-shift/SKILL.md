@@ -205,8 +205,8 @@ One PR per shift. If you touched two repos, that's two PRs, and it's usually a s
 TS=$(curl -sS -X POST https://slack.com/api/chat.postMessage \
   -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
   -H 'Content-Type: application/json; charset=utf-8' \
-  -d "$(jq -n --arg c "$SLACK_SHIFT_LOG" --arg u "$BOT_DISPLAY" --arg i "$BOT_ICON" --rawfile t shift-note.md \
-        '{channel:$c, text:$t, username:$u, icon_emoji:$i}')" \
+  -d "$(jq -n --arg c "$SLACK_SHIFT_LOG" --arg u "$BOT_DISPLAY" --arg i "$SLACK_ICON_URL" --rawfile t shift-note.md \
+        '{channel:$c, text:$t, username:$u, icon_url:$i}')" \
   | jq -er '.ts')
 
 LINK=$(curl -sS -G https://slack.com/api/chat.getPermalink \
