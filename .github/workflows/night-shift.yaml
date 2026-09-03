@@ -1,7 +1,5 @@
 name: Richmond
 
-# Must live on the default branch — scheduled workflows only run from there.
-
 on:
   schedule:
     - cron: "0 22 * * *"    # 22:00 UTC
@@ -14,11 +12,9 @@ jobs:
 
     permissions:
       contents: read
-      id-token: write        # required by the action's own auth
+      id-token: write
 
     steps:
-      # owner without a repositories list scopes the token org-wide,
-      # which is what lets Richmond create new repos.
       - name: Mint Richmond's token
         id: token
         uses: actions/create-github-app-token@v2
@@ -31,13 +27,24 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Prepare the shift
+      - name: Preflight
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
         run: |
           set -euo pipefail
+
           BOT_ID=$(gh api /users/richmond-avenal%5Bbot%5D --jq .id)
           echo "BOT_USER_ID=$BOT_ID" >> "$GITHUB_ENV"
+
+          EMAIL="$BOT_ID+richmond-avenal[bot]@users.noreply.github.com"
+          {
+            echo "GIT_AUTHOR_NAME=richmond-avenal[bot]"
+            echo "GIT_AUTHOR_EMAIL=$EMAIL"
+            echo "GIT_COMMITTER_NAME=richmond-avenal[bot]"
+            echo "GIT_COMMITTER_EMAIL=$EMAIL"
+          } >> "$GITHUB_ENV"
+
+          # Fail here rather than three hours in.
           gh api /orgs/committed-nightly --jq .login
 
       - name: Run the shift
