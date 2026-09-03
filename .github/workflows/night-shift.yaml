@@ -56,7 +56,6 @@ jobs:
           SLACK_DISPLAY_NAME: Richmond
           SLACK_ICON_URL: ${{ vars.RICHMOND_ICON_URL }}
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-          # From vars — these were crossed once already.
           SLACK_SHIFT_LOG: ${{ vars.SLACK_SHIFT_LOG }}
           SLACK_ORDERS: ${{ vars.SLACK_ORDERS }}
           SLACK_INCIDENTS: ${{ vars.SLACK_INCIDENTS }}
