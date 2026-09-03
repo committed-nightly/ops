@@ -1,12 +1,5 @@
 name: Moss
 
-# Moss. Sundays, after the week has happened.
-#
-# His app is installed read-only across the org and writes only to
-# logbook/metrics/ — an observer that can change what it observes isn't
-# one. Slack is the shared app; #metrics staying out of the shifts' reach
-# is a prompt rule, not a technical boundary.
-
 on:
   schedule:
     - cron: "0 19 * * 0"     # Sunday 19:00 UTC, after the week's shifts
@@ -36,20 +29,28 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Clone logbook
-        env:
-          GH_TOKEN: ${{ steps.token.outputs.token }}
-        run: gh repo clone committed-nightly/logbook logbook
-
-      - name: Prepare the shift
+      - name: Preflight
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
         run: |
           set -euo pipefail
+          
           pip install --quiet requests pandas matplotlib
+          
           BOT_ID=$(gh api /users/maurice-moss%5Bbot%5D --jq .id)
           echo "BOT_USER_ID=$BOT_ID" >> "$GITHUB_ENV"
+
+          EMAIL="$BOT_ID+maurice-moss[bot]@users.noreply.github.com"
+          {
+            echo "GIT_AUTHOR_NAME=maurice-moss[bot]"
+            echo "GIT_AUTHOR_EMAIL=$EMAIL"
+            echo "GIT_COMMITTER_NAME=maurice-moss[bot]"
+            echo "GIT_COMMITTER_EMAIL=$EMAIL"
+          } >> "$GITHUB_ENV"
+
+          # Fail here rather than three hours in.
           gh api /orgs/committed-nightly --jq .login
+          gh repo clone committed-nightly/logbook logbook
 
       - name: Run the analysis
         uses: anthropics/claude-code-action@v1
