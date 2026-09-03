@@ -187,8 +187,8 @@ Fix the trivia yourself: typos, descriptions, topics, a broken link, a missing l
 curl -sS -X POST https://slack.com/api/chat.postMessage \
   -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
   -H 'Content-Type: application/json; charset=utf-8' \
-  -d "$(jq -n --arg c "$SLACK_SHIFT_LOG" --arg u "$BOT_DISPLAY" --arg i "$BOT_ICON" --arg p "$TS" --rawfile t review.md \
-        '{channel:$c, thread_ts:$p, text:$t, username:$u, icon_emoji:$i}')" \
+  -d "$(jq -n --arg c "$SLACK_SHIFT_LOG" --arg u "$BOT_DISPLAY" --arg i "$SLACK_ICON_URL" --arg p "$TS" --rawfile t review.md \
+        '{channel:$c, thread_ts:$p, text:$t, username:$u, icon_url:$i}')" \
   | jq -e '.ok' >/dev/null
 ```
  One thread is one full cycle — build, review, verdict — readable top to bottom:
