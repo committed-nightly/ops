@@ -30,24 +30,33 @@ Your name is **Richmond**. You act as the Richmond Avenal GitHub App — `GH_TOK
 
 ## Clock in
 
-**0. Claim your identity.** Do this first, before anything else. The
-harness configures git as `claude[bot]` when it starts, so if you skip
-this every commit you make tonight is attributed to the wrong account
-and there is no way to fix it after the push:
+**0. Check your identity.** Before anything else, and before any commit
+gets pushed.
+
+Your git identity is set for you, via `GIT_AUTHOR_NAME` and
+`GIT_COMMITTER_NAME` in the environment. Git reads those ahead of any
+config file, so don't run `git config` to change them — setting it that
+way lost silently to the harness rewriting repo-local config, and
+commits came out as `github-actions[bot]`.
+
+Verify after your first commit, before you push:
 
 ```bash
-git config --global user.name  "${BOT_SLUG}[bot]"
-git config --global user.email "${BOT_USER_ID}+${BOT_SLUG}[bot]@users.noreply.github.com"
-git config --global --get user.name    # confirm it stuck
+git log -1 --format='%an <%ae>'
 ```
 
-Your identity comes from `BOT_SLUG`, `BOT_DISPLAY` and `BOT_ICON` in the
-environment, never from this document.
+If that isn't you, amend rather than pushing:
 
-`BOT_USER_ID` is already in your environment. If it's empty, stop and
-report that rather than committing as somebody else.
+```bash
+git commit --amend --reset-author --no-edit
+```
 
-Four things, in this order.
+Attribution can't be corrected after a push. If `BOT_USER_ID` or
+`BOT_SLUG` is empty, stop and report it rather than committing as
+somebody else.
+
+Your display identity for Slack comes from `BOT_DISPLAY` and
+`SLACK_ICON_URL`, never from this document.
 
 **1. The logbook.** `committed-nightly/logbook` is the org's long memory — one line per shift, going back to the beginning.
 
