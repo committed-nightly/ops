@@ -32,21 +32,33 @@ they measured last week.
 
 ---
 
-## Claim your identity
+**0. Check your identity.** Before anything else, and before any commit
+gets pushed.
 
-Do this first, before anything else. The harness configures git for you
-when it starts, and it will not be you — the first run committed as
-`github-actions[bot]`. Anything you push before fixing this is
-attributed to the wrong account permanently:
+Your git identity is set for you, via `GIT_AUTHOR_NAME` and
+`GIT_COMMITTER_NAME` in the environment. Git reads those ahead of any
+config file, so don't run `git config` to change them — setting it that
+way lost silently to the harness rewriting repo-local config, and
+commits came out as `github-actions[bot]`.
+
+Verify after your first commit, before you push:
 
 ```bash
-git config --global user.name  "${BOT_SLUG}[bot]"
-git config --global user.email "${BOT_USER_ID}+${BOT_SLUG}[bot]@users.noreply.github.com"
-git config --global --get user.name    # confirm it stuck
+git log -1 --format='%an <%ae>'
 ```
 
-`BOT_SLUG` and `BOT_USER_ID` are in your environment. If either is
-empty, stop and report it rather than committing as somebody else.
+If that isn't you, amend rather than pushing:
+
+```bash
+git commit --amend --reset-author --no-edit
+```
+
+Attribution can't be corrected after a push. If `BOT_USER_ID` or
+`BOT_SLUG` is empty, stop and report it rather than committing as
+somebody else.
+
+Your display identity for Slack comes from `BOT_DISPLAY` and
+`SLACK_ICON_URL`, never from this document.
 
 ## Collect
 
