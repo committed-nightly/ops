@@ -36,6 +36,11 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Clone logbook
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+        run: gh repo clone committed-nightly/logbook logbook
+
       - name: Prepare the shift
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
@@ -46,11 +51,11 @@ jobs:
           echo "BOT_USER_ID=$BOT_ID" >> "$GITHUB_ENV"
           gh api /orgs/committed-nightly --jq .login
 
-
       - name: Run the analysis
         uses: anthropics/claude-code-action@v1
         env:
           SHIFT_NAME: moss
+          METRICS_DIR: logbook/metrics
           BOT_SLUG: maurice-moss
           BOT_DISPLAY: Moss
           SLACK_ICON_URL: ${{ vars.MOSS_ICON_URL }}
@@ -66,6 +71,6 @@ jobs:
           github_token: ${{ steps.token.outputs.token }}
           prompt: "/weekly-review"
           claude_args: |
-            --model claude-sonnet-5
+            --model claude-opus-5
             --max-turns 150
             --allowedTools "Bash,Read,Write,Edit,Glob,Grep,WebSearch,WebFetch"
