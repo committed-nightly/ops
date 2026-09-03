@@ -40,14 +40,8 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Don't set git config here — the action overwrites it with
-          # claude[bot] afterwards. Jen sets her own at clock-in.
           BOT_ID=$(gh api /users/jennifer-barber%5Bbot%5D --jq .id)
           echo "BOT_USER_ID=$BOT_ID" >> "$GITHUB_ENV"
-          echo "BOT_SLUG=jennifer-barber" >> "$GITHUB_ENV"
-          echo "BOT_DISPLAY=Jen" >> "$GITHUB_ENV"
-          echo "BOT_ICON=:sunny:" >> "$GITHUB_ENV"
-
           gh api /orgs/committed-nightly --jq .login
 
           # Nothing to review is a legitimate morning.
@@ -59,7 +53,7 @@ jobs:
         env:
           SHIFT_NAME: jen
           BOT_SLUG: jennifer-barber
-          SLACK_DISPLAY_NAME: Jen
+          BOT_DISPLAY: Jen
           SLACK_ICON_URL: ${{ vars.JEN_ICON_URL }}
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_SHIFT_LOG: ${{ vars.SLACK_SHIFT_LOG }}
