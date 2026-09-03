@@ -64,7 +64,9 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ steps.token.outputs.token }}
           prompt: "/night-shift"
+          show_full_output: ${{ runner.debug == '1' }}
           claude_args: |
+            ${{ runner.debug == '1' && '--debug' || '' }}
             --model claude-opus-5
             --max-turns 200
             --allowedTools "Bash,Read,Write,Edit,Glob,Grep,WebSearch,WebFetch"
