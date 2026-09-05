@@ -1,0 +1,49 @@
+name: Shift watcher
+
+# The shifts write their own records — the #shift-log post, the SHIFTS.md line
+# — partway through their own run, so a run that dies early leaves nothing
+# anywhere. Three times now (logbook#12). This is the part that runs after the
+# shift's job is over, in its own run, so the shift dying cannot take it down
+# with it.
+#
+# Two things to know before editing:
+#
+#   * `workflow_run` only fires from the copy of this file on the default
+#     branch. Changes here do nothing until they are on `main`.
+#   * `workflows:` matches the `name:` of the watched workflow, not its
+#     filename. Rename a shift and this stops watching it, silently.
+#
+# It deliberately runs on every completion, including clean ones, and decides
+# in the script. A watcher that only appears when something is broken looks
+# identical to a watcher that stopped working.
+
+on:
+  workflow_run:
+    workflows: [Richmond, Jen, Moss]
+    types: [completed]
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    # Nothing here talks to the GitHub API. Everything it reports arrives in
+    # the event payload.
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Report the outcome
+        env:
+          # Read straight from secrets and vars. The 09-01 outage failed *in*
+          # the shift's own preflight step, so a watcher that depended on
+          # anything preflight exports would have stayed silent for exactly
+          # the incident that started this.
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_INCIDENTS: ${{ vars.SLACK_INCIDENTS }}
+          WORKFLOW_RUN: ${{ toJSON(github.event.workflow_run) }}
+        run: python3 scripts/notify-shift-outcome.py
