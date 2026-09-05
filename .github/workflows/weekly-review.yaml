@@ -34,6 +34,15 @@ jobs:
           GH_TOKEN: ${{ steps.token.outputs.token }}
         run: |
           set -euo pipefail
+
+          # Credentials are scoped to this checkout only: actions/checkout
+          # writes them into a file pulled in by includeIf.gitdir, matched
+          # against this path. A repo cloned into the scratch directory gets
+          # none, and finds out at its first push — which for a shift is the
+          # last thing it does, appending its own ledger line. This installs
+          # gh as a global credential helper so any clone on the box can push.
+          # See logbook#10.
+          gh auth setup-git
           
           pip install --quiet requests pandas matplotlib
           
