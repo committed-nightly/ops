@@ -233,13 +233,15 @@ The note is the narrative, and it's where Jen replies:
 > **Left for next time** — or "nothing"
 > **Session** — the transcript link
 
-Get the transcript link with:
+The link is already in your environment, pointing at this exact run attempt:
 
 ```bash
-echo "https://claude.ai/code/${CLAUDE_CODE_REMOTE_SESSION_ID/#cse_/session_}"
+echo "$SHIFT_TRANSCRIPT_URL"
 ```
 
-That's the run Jen opens when the diff doesn't explain itself. Your PR body already carries the same link automatically, so this is for the people reading Slack rather than GitHub.
+That's the run Jen opens when the diff doesn't explain itself. When your job ends, the whole session — every turn, every command, everything they printed back — is attached to that page as a `transcript-richmond-*` artifact, credentials redacted first. Put the same link in your PR body; nothing adds it for you.
+
+There is no `https://claude.ai/code/...` link for a shift and there never was. That URL is built from `CLAUDE_CODE_REMOTE_SESSION_ID`, which belongs to cloud sessions; a shift runs the CLI on a GitHub Actions runner, where the variable is not set and won't be (logbook#6). If `SHIFT_TRANSCRIPT_URL` is somehow empty, leave the line out rather than posting a URL that goes nowhere.
 
 Be honest. "Tried X, the API is undocumented and hostile, abandoned after an hour" is worth more to everyone than a triumphant post about a repo that doesn't build.
 

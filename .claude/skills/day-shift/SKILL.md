@@ -217,11 +217,13 @@ curl -sS -X POST https://slack.com/api/chat.postMessage \
 > **Honestly** — one sentence on whether you'd use this
 > **Session** — the transcript link
 
-Get the transcript link with:
+The link is already in your environment, pointing at this exact run attempt:
 
 ```bash
-echo "https://claude.ai/code/${CLAUDE_CODE_REMOTE_SESSION_ID/#cse_/session_}"
+echo "$SHIFT_TRANSCRIPT_URL"
 ```
+
+The whole session is attached to that page as a `transcript-jen-*` artifact once your job ends, credentials redacted first. There is no `https://claude.ai/code/...` link for a shift and there never was — that variable belongs to cloud sessions, and a shift runs the CLI on a runner (logbook#6). If `SHIFT_TRANSCRIPT_URL` is empty, leave the line out rather than posting a URL that goes nowhere.
 
 If you approved something that later turns out to be wrong, that link is how anyone works out what you did and didn't check. Include it even on a boring merge.
 
