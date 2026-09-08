@@ -63,6 +63,7 @@ jobs:
         uses: anthropics/claude-code-action@v1
         env:
           SHIFT_NAME: jen
+          SHIFT_TRANSCRIPT_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}
           BOT_SLUG: jennifer-barber
           BOT_DISPLAY: Jen
           SLACK_ICON_URL: ${{ vars.JEN_ICON_URL }}
@@ -82,3 +83,48 @@ jobs:
             --model claude-sonnet-5
             --max-turns 150
             --allowedTools "Bash,Read,Write,Edit,Glob,Grep,WebSearch,WebFetch"
+
+      # The record of what a shift actually did, as opposed to what it says it
+      # did. `show_full_output` is off, so none of the agent's turns reach the
+      # job log, and the action's own copy under RUNNER_TEMP dies with the
+      # runner. Both shift routines used to end by printing a
+      # `https://claude.ai/code/...` link built from CLAUDE_CODE_REMOTE_SESSION_ID,
+      # which is not set in an Actions runner and never will be — that variable
+      # belongs to cloud sessions. See logbook#6.
+      #
+      # `always()` because the shift you most want to read is the one that
+      # failed. Exit 3 means the job was killed before the action wrote
+      # anything at all: nothing to keep, and not a fault of this step.
+      #
+      # Nothing is uploaded that was not first redacted and self-checked. `ops`
+      # is public, artifacts are not masked the way job logs are, and this
+      # shift's environment holds a live installation token and a Slack bot
+      # token. If the redactor cannot finish, it writes no file, this step goes
+      # red and the upload below finds nothing to upload.
+      - name: Redact the transcript
+        id: transcript
+        if: always()
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 scripts/redact-transcript.py \
+            "$RUNNER_TEMP/claude-execution-output.json" \
+            "$RUNNER_TEMP/transcript.json" || [ $? -eq 3 ]
+          if [ -f "$RUNNER_TEMP/transcript.json" ]; then
+            echo "kept=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Keep the transcript
+        if: always() && steps.transcript.outputs.kept == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          # Named per attempt, not per run: a re-run is a different session
+          # and overwriting the first one would lose exactly the transcript
+          # someone came looking for.
+          name: transcript-jen-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/transcript.json
+          retention-days: 90
+          if-no-files-found: error

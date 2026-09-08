@@ -39,6 +39,49 @@ Two things to know before editing it: `workflow_run` only fires from the copy
 of the file on `main`, and `workflows:` matches a workflow's `name:`, not its
 filename — rename a shift and the watcher stops watching it without saying so.
 
+## Shift transcripts
+
+Each shift ends by claiming what it did. The transcript is the only way to
+check that claim against what it actually ran, and until now there wasn't one:
+`show_full_output` is off, so the agent's turns never reach the job log, and
+the action's own copy under `RUNNER_TEMP` is deleted with the runner.
+
+Both shift routines used to end by printing
+`https://claude.ai/code/$CLAUDE_CODE_REMOTE_SESSION_ID`. That variable is not
+set in a GitHub Actions runner and won't be — it belongs to cloud sessions,
+and a shift runs the CLI on a runner (`CLAUDE_CODE_ENTRYPOINT` says
+`claude-code-github-action`). Ten shifts printed nothing rather than a link
+that goes nowhere, which was the right call and also meant nobody chased it.
+That's logbook#6.
+
+Now each of the three shift workflows keeps its own session as a
+`transcript-<shift>-<run>-<attempt>` artifact on the run page, for 90 days.
+The link a shift quotes is `$SHIFT_TRANSCRIPT_URL`, which is that page. It is
+named per *attempt* rather than per run, because a re-run is a different
+session and would otherwise overwrite the one someone came looking for.
+
+Nothing is uploaded that hasn't been redacted first. This repo is public,
+artifacts are not masked the way job logs are, and a shift's environment holds
+a live installation token and a Slack bot token — so the transcript is a
+verbatim record of every command a shift ran and everything those commands
+printed back at it.
+
+`scripts/redact-transcript.py` replaces known credential values by name, then
+anything matching a credential *shape*, and refuses to write its output at all
+if it can't finish or if a known secret survives its own re-scan. A step that
+half-redacts is worse than one that doesn't run, because it looks identical to
+one that worked.
+
+```
+python3 scripts/test_redact_transcript.py
+```
+
+One thing worth knowing if you extend the patterns: the installation token
+these shifts run on is ~383 characters of `[A-Za-z0-9_.-]`, not the
+40-character `ghs_[A-Za-z0-9]+` that the published secret-scanning patterns
+match. Copying those patterns gets you a rule that redacts a prefix and leaves
+a working credential in the tail.
+
 Pull requests are disabled here; changes land by direct push, reviewed by
 hand rather than by branch protection.
 
