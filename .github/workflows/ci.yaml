@@ -14,6 +14,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Test the shift watcher's notifier
         run: python3 scripts/test_notify_shift_outcome.py
@@ -23,3 +25,8 @@ jobs:
 
       - name: Test the transcript redactor
         run: python3 scripts/test_redact_transcript.py
+
+      - name: Check for dead workflow triggers
+        run: |
+          pip install --quiet git+https://github.com/committed-nightly/deadtrigger@v0.1.0
+          deadtrigger --default-branch main
