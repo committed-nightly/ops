@@ -32,6 +32,8 @@ Env:
   SLACK_INCIDENTS   required, channel id
   WORKFLOW_RUN      required, the `github.event.workflow_run` object as JSON
   SLACK_API_BASE    optional, defaults to https://slack.com/api (tests)
+  GITHUB_OUTPUT     optional, written with `ts=` so rerun-dead-shift.py can
+                    reply in this message's thread
 """
 
 import json
@@ -170,6 +172,23 @@ def post(api_base, token, channel, text):
     return parsed.get("ts", "")
 
 
+def emit_output(name, value):
+    """Hand something to a later step in the same job.
+
+    Best effort, like `duration`: this exists so the re-run reply lands in
+    this message's thread, and a missing thread is worth less than a missing
+    incident. Never a reason to go red.
+    """
+    path = os.environ.get("GITHUB_OUTPUT")
+    if not path or not value:
+        return
+    try:
+        with open(path, "a", encoding="utf-8") as handle:
+            handle.write(f"{name}={value}\n")
+    except OSError as exc:
+        print(f"notify-shift-outcome: could not write {name}: {exc}", file=sys.stderr)
+
+
 def main():
     run = parse_run(require("WORKFLOW_RUN"))
     text = compose(run)
@@ -189,6 +208,7 @@ def main():
 
     ts = post(api_base, token, channel, text)
     print(f"posted to {channel} as {ts}")
+    emit_output("ts", ts)
 
 
 if __name__ == "__main__":

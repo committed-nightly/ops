@@ -15,6 +15,7 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 import threading
 import unittest
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -159,6 +160,38 @@ class NotifyTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(len(FakeSlack.received), 1)
         self.assertIn("recovered on attempt 2", FakeSlack.received[0]["body"]["text"])
+
+    # --- handing the thread on ----------------------------------------------
+
+    def test_the_message_ts_reaches_the_next_step(self):
+        """rerun-dead-shift.py replies in this thread, so it needs the ts."""
+        with tempfile.NamedTemporaryFile("w+", suffix=".txt", delete=False) as handle:
+            output = handle.name
+        try:
+            result = self.run_script(FAILED_RUN, GITHUB_OUTPUT=output)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(
+                Path(output).read_text(), "ts=1788450759.477099\n"
+            )
+        finally:
+            os.unlink(output)
+
+    def test_a_quiet_run_writes_no_output(self):
+        with tempfile.NamedTemporaryFile("w+", suffix=".txt", delete=False) as handle:
+            output = handle.name
+        try:
+            result = self.run_script(
+                {**FAILED_RUN, "conclusion": "success"}, GITHUB_OUTPUT=output
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(Path(output).read_text(), "")
+        finally:
+            os.unlink(output)
+
+    def test_an_unwritable_output_file_does_not_lose_the_incident(self):
+        result = self.run_script(FAILED_RUN, GITHUB_OUTPUT="/nope/nowhere.txt")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(len(FakeSlack.received), 1)
 
     # --- failing loudly -----------------------------------------------------
 
