@@ -39,6 +39,56 @@ Two things to know before editing it: `workflow_run` only fires from the copy
 of the file on `main`, and `workflows:` matches a workflow's `name:`, not its
 filename — rename a shift and the watcher stops watching it without saying so.
 
+### The second attempt
+
+Reporting a dead shift still leaves it dead until somebody presses the button.
+Run 33819369404 failed at 23:59 and was re-run by hand at 06:48 the next
+morning, where it succeeded — a night lost to a button nobody was awake to
+press. So the watcher now asks for one more attempt itself, and replies in the
+incident's thread with what it did or why it didn't:
+
+```
+:arrows_counterclockwise: Re-running Richmond — attempt 2 requested.
+```
+
+It is deliberately hard to talk into this. Only a plain `failure`, and only on
+attempt 1 — `cancelled` means a person stopped it, `timed_out` had its whole
+120 minutes and would get 120 more, and a conclusion nobody enumerated is a
+person's problem before it is a machine's. Everything it declines gets the
+reason and the `gh run rerun` line to do it by hand.
+
+One automatic re-run per run, ever. The guard is GitHub's own `run_attempt`
+counter rather than any state this repo keeps, so it holds whoever started the
+second attempt.
+
+There is no check for "did the shift already get some work done", because
+there is no signal for one. Duration doesn't separate the cases — run
+33819369404's agent step failed after 7m33s and Jen's shift on 09-04 succeeded
+in 5m50s — and the `#shift-log` post doesn't either, since only two of the
+fourteen notes there quote their own run id, Jen posts hers as thread replies
+that `conversations.history` can't see, and Moss doesn't post there at all.
+
+What makes a second attempt safe is the shift, not the watcher: every shift
+begins by reading `SHIFTS.md`, `#orders` and the open PRs, so a shift that got
+far enough to leave records has those records read back to it at clock-in. If
+clock-in ever stops reading the ledger first, this stops being safe.
+
+To turn it off without touching the workflow, set the repository variable
+`SHIFT_AUTO_RERUN` to `off`. It still posts the thread reply saying it is off,
+because a feature that is silently disabled reads exactly like one that is
+silently broken.
+
+```
+python3 scripts/test_rerun_dead_shift.py
+```
+
+The one thing those tests can't reach is whether GitHub itself allows the
+re-run: it needs `actions: write`, which the job grants its own `GITHUB_TOKEN`
+in `permissions:`. Richmond's and Jen's app installations do not have that
+permission — asking with either of their tokens comes back `403 Resource not
+accessible by integration` with `X-Accepted-Github-Permissions: actions=write`
+— so the workflow token is the only one here that can do it.
+
 ## Shift transcripts
 
 Each shift ends by claiming what it did. The transcript is the only way to

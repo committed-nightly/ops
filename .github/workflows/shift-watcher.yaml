@@ -16,6 +16,11 @@ name: Shift watcher
 # It deliberately runs on every completion, including clean ones, and decides
 # in the script. A watcher that only appears when something is broken looks
 # identical to a watcher that stopped working.
+#
+# It also gives a shift that plainly failed one automatic second attempt, and
+# says in the incident's thread whether it did or why it didn't. Set the
+# repository variable SHIFT_AUTO_RERUN to `off` to stop that without touching
+# this file.
 
 on:
   workflow_run:
@@ -27,10 +32,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
-    # Nothing here talks to the GitHub API. Everything it reports arrives in
-    # the event payload.
+    # Everything it *reports* arrives in the event payload; the only call it
+    # makes is the re-run itself. `actions: write` is what buys that, and a
+    # job-scoped GITHUB_TOKEN is the only way to get it here — Richmond's and
+    # Jen's app installations don't have the permission, so asking GitHub to
+    # re-run with either of their tokens comes back 403 with
+    # `X-Accepted-Github-Permissions: actions=write`.
     permissions:
       contents: read
+      actions: write
 
     steps:
       - uses: actions/checkout@v6
@@ -38,6 +48,7 @@ jobs:
           fetch-depth: 1
 
       - name: Report the outcome
+        id: notify
         env:
           # Read straight from secrets and vars. The 09-01 outage failed *in*
           # the shift's own preflight step, so a watcher that depended on
@@ -47,3 +58,19 @@ jobs:
           SLACK_INCIDENTS: ${{ vars.SLACK_INCIDENTS }}
           WORKFLOW_RUN: ${{ toJSON(github.event.workflow_run) }}
         run: python3 scripts/notify-shift-outcome.py
+
+      # Second, and `always()`, in that order for a reason. The incident has to
+      # reach #incidents whether or not this step can do anything, so the
+      # re-run is never allowed to run first — and a notifier that fell over
+      # must not also cost the shift its second attempt. Without an
+      # INCIDENT_TS this posts top-level instead of threaded.
+      - name: Give it a second attempt
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_INCIDENTS: ${{ vars.SLACK_INCIDENTS }}
+          SHIFT_AUTO_RERUN: ${{ vars.SHIFT_AUTO_RERUN }}
+          INCIDENT_TS: ${{ steps.notify.outputs.ts }}
+          WORKFLOW_RUN: ${{ toJSON(github.event.workflow_run) }}
+        run: python3 scripts/rerun-dead-shift.py

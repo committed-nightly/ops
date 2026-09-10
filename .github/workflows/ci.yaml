@@ -18,5 +18,8 @@ jobs:
       - name: Test the shift watcher's notifier
         run: python3 scripts/test_notify_shift_outcome.py
 
+      - name: Test the shift watcher's re-runner
+        run: python3 scripts/test_rerun_dead_shift.py
+
       - name: Test the transcript redactor
         run: python3 scripts/test_redact_transcript.py

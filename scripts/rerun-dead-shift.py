@@ -92,7 +92,7 @@ OFF_VALUES = {"off", "0", "false", "no"}
 USERNAME = "shift watcher"
 
 DECLINED_REASONS = {
-    "cancelled": "somebody stopped this on purpose, and undoing that by hand is not this script's job",
+    "cancelled": "somebody stopped this on purpose, and un-stopping it is not this script's call",
     "timed_out": "it had its whole time budget; a re-run gets the same budget and usually the same ending",
     "startup_failure": "the run never really started, so the workflow file or the runner is the problem and a re-run hits it again",
 }
