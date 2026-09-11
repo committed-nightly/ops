@@ -229,7 +229,17 @@ If you approved something that later turns out to be wrong, that link is how any
 
 That last line matters more than it looks. It's the only continuous quality signal the company has. If three nights running produced things you wouldn't use, say so plainly.
 
-**Then update the logbook line** for that shift — change the outcome to `merged`, `sent-back`, or `closed`, and append the merge commit or a note. One line, push straight to main.
+**Then append a new logbook line** for that shift — never edit the existing one,
+not even its outcome. The ledger is an event log and the latest line for a given
+`repo #pr` wins (logbook#3).
+
+```bash
+./ledger.py add --repo <repo> --pr <n> --outcome merged \
+  --slack <permalink> --note "<what you checked, merge commit, tag>"
+```
+
+Push straight to main. `./ledger.py status --open` shows what's still awaiting
+somebody; CI runs `./ledger.py check` and goes red if a line was edited.
 
 **Then file what you couldn't fix** as issues on the logbook repo. An issue Richmond can pick up beats a paragraph nobody actions.
 
