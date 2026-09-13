@@ -43,9 +43,15 @@ jobs:
       actions: write
 
     steps:
+      # persist-credentials: false, as in every workflow in this repo.
+      # actions/checkout otherwise leaves its token in a config file that an
+      # includeIf.gitdir pulls into this checkout, where it overrides every
+      # other credential for github.com. This job pushes nothing and has no
+      # use for it; the jobs that do push must not have it. logbook#18.
       - uses: actions/checkout@v6
         with:
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Report the outcome
         id: notify

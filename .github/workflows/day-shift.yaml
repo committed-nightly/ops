@@ -23,9 +23,20 @@ jobs:
           private-key: ${{ secrets.JEN_PRIVATE_KEY }}
           owner: committed-nightly
 
+      # persist-credentials: false, in every workflow here. By default
+      # actions/checkout leaves its token behind in a config file that an
+      # includeIf.gitdir pulls into this checkout, as
+      # `http.….extraheader=AUTHORIZATION: basic …`. A header is attached to
+      # the request, so it beats gh's credential helper and it beats
+      # credentials in the remote URL: every push from this directory goes up
+      # as github-actions[bot], with the commits still authored correctly, and
+      # nothing local says otherwise. Today that shows as a 403 because
+      # github-actions[bot] cannot write here; one `contents: write` for an
+      # unrelated reason and it starts succeeding quietly. logbook#18.
       - uses: actions/checkout@v6
         with:
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Preflight
         env:
@@ -33,14 +44,21 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Credentials are scoped to this checkout only: actions/checkout
-          # writes them into a file pulled in by includeIf.gitdir, matched
-          # against this path. A repo cloned into the scratch directory gets
-          # none, and finds out at its first push — which for a shift is the
-          # last thing it does, appending its own ledger line. This installs
-          # gh as a global credential helper so any clone on the box can push.
-          # See logbook#10.
+          # gh as a global credential helper, so any clone on the box can
+          # push. A repo cloned into the scratch directory otherwise gets no
+          # credentials at all and finds out at its first push — which for a
+          # shift is the last thing it does, appending its own ledger line.
+          # See logbook#10. Now that the checkout above persists nothing, this
+          # is also the only credential here that can push anywhere.
           gh auth setup-git
+
+          # And then prove it, rather than trusting the YAML above to have
+          # done its job. This resolves the credential that actually wins for
+          # github.com and compares it to $GH_TOKEN — the check that
+          # `git log -1 --format='%an'` cannot make, because a push's identity
+          # is not in the commit object. It covers this checkout; a scratch
+          # clone can be checked the same way once it exists. logbook#18.
+          python3 scripts/check-push-identity.py .
 
           BOT_ID=$(gh api /users/jennifer-barber%5Bbot%5D --jq .id)
           echo "BOT_USER_ID=$BOT_ID" >> "$GITHUB_ENV"
