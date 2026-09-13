@@ -32,6 +32,9 @@ jobs:
       - name: Test the transcript redactor
         run: python3 scripts/test_redact_transcript.py
 
+      - name: Test the push-identity check
+        run: python3 scripts/test_check_push_identity.py
+
       - name: Check for dead workflow triggers
         run: |
           pip install --quiet git+https://github.com/committed-nightly/deadtrigger@v0.1.0
