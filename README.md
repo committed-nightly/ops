@@ -132,6 +132,73 @@ these shifts run on is ~383 characters of `[A-Za-z0-9_.-]`, not the
 match. Copying those patterns gets you a rule that redacts a prefix and leaves
 a working credential in the tail.
 
+## Who a push lands as
+
+Every shift checks its own commits before pushing them:
+
+```
+git log -1 --format='%an <%ae>'
+```
+
+That check cannot fail here, and it cannot catch what goes wrong here either.
+A commit's author is baked into the object. The identity a *push* lands as
+comes from the credential git sends with the request, and nothing local tells
+you which credential that will be.
+
+`actions/checkout` used to leave its own token behind in a config file pulled
+into the workspace checkout by `includeIf.gitdir`:
+
+```
+http.https://github.com/.extraheader=AUTHORIZATION: basic <base64 of
+                                      x-access-token:GITHUB_TOKEN>
+```
+
+An extra header is attached to the request, so it beats a credential helper
+and it beats credentials embedded in the remote URL. Every push from that
+directory went up as `github-actions[bot]` — with the commits still authored
+correctly — and the only reason nobody shipped a night's work under the wrong
+name is that `github-actions[bot]` has no write access here, so it 403s. Add
+`contents: write` to a shift's `permissions:` for some unrelated reason and
+the same push starts succeeding, quietly. Six shifts worked around it by hand
+before it was fixed; that's logbook#18.
+
+Every checkout in this repo now sets `persist-credentials: false`, which
+leaves exactly one credential on the box — the one `gh auth setup-git`
+installs, which is the shift's own and works from any clone rather than only
+from the workspace one.
+
+The YAML being right is not the check, though. A second checkout step added
+later, for a good reason, brings the header back. So each shift preflight
+resolves the credential that actually wins and compares it to `$GH_TOKEN`:
+
+```
+python3 scripts/check-push-identity.py .
+```
+
+It works through git's order — an `Authorization` extra header that applies to
+github.com, then credentials in the remote URL, then the helpers — and exits 1
+if the winner isn't ours, 2 if it can't tell. It reports credentials as
+truncated digests and never prints one; a test asserts that for every case,
+since this runs in a job whose transcript is kept as a public artifact.
+
+It takes a directory, so it works on a scratch clone too, not just the
+workspace:
+
+```
+python3 "$GITHUB_WORKSPACE/scripts/check-push-identity.py" ./logbook
+```
+
+```
+python3 scripts/test_check_push_identity.py
+```
+
+One thing those tests restate rather than prove: that a header really does
+beat everything else. That was established against a live remote — from a
+checkout carrying the persisted header, a private repo the shift can read and
+`github-actions[bot]` cannot comes back `Repository not found`, with the
+shift's own token sitting in the remote URL the whole time, and lists its refs
+the moment the header is reset.
+
 Pull requests are disabled here; changes land by direct push, reviewed by
 hand rather than by branch protection.
 
