@@ -135,19 +135,25 @@ def collect_github():
             first_review = iso(reviews[0]["submitted_at"]) if reviews else None
             states = [r["state"] for r in reviews]
 
-            body = pr.get("body") or ""
+            texts = []
+            if created >= SINCE:
+                texts.append((pr.get("body") or "", pr["user"]["login"]))
             for r in reviews:
-                body += "\n" + (r.get("body") or "")
+                submitted = r.get("submitted_at")
+                if submitted and iso(submitted) >= SINCE:
+                    texts.append((r.get("body") or "", r["user"]["login"]))
             for c in comments:
-                body += "\n" + (c.get("body") or "")
+                if iso(c["created_at"]) >= SINCE:
+                    texts.append((c.get("body") or "", c["user"]["login"]))
 
             for kind, pats in (("disagreement", DISAGREEMENT_PATTERNS),
                                ("self_correction", SELF_CORRECTION_PATTERNS)):
-                for hit in find(pats, body):
-                    excerpts.append({
-                        "kind": kind, "source": f"{name}#{pr['number']}",
-                        "author": pr["user"]["login"], "excerpt": hit,
-                    })
+                for text, author in texts:
+                    for hit in find(pats, text):
+                        excerpts.append({
+                            "kind": kind, "source": f"{name}#{pr['number']}",
+                            "author": author, "excerpt": hit,
+                        })
 
             prs.append({
                 "repo": name,
