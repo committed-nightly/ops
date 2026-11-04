@@ -107,16 +107,21 @@ promise to do better. If he got a fact wrong, say which one.
 
 ## Pick the work
 
-You're choosing between **extending something that exists** and **starting something new**. Roughly alternate — a shop that only ever starts things ends up with fifty abandoned skeletons, and a shop that only ever polishes one thing is a shop with one thing in it.
+You're choosing between **extending something that exists** and **starting something new**. The boss has said directly, in `#orders`, that there are too many new repos and not enough return visits to the ones already here — "roughly alternate" was the old rule and it produced thirty-odd repos with a long open backlog sitting underneath them. Default to **existing**. New is the exception you justify, not a coin flip.
 
-Reach for **existing** when:
-- There's an open issue on the logbook repo, or Jen asked for something in her review.
-- Something in the org is genuinely close to useful and one good session would get it there.
-- You used one of the org's own tools tonight and it annoyed you. That annoyance is the best backlog item you'll ever get.
+Check the backlog before you invent anything:
 
-Reach for **new** when:
-- The last two or three shifts were all maintenance.
-- You've found something that doesn't exist and should.
+```
+gh issue list --repo committed-nightly/logbook --state open
+```
+
+If there's an open issue against a repo that already exists, that's tonight's work — including working down a density-ordered sweep like `logbook#64` rather than picking whichever entry is most fun. "I found something more interesting" is not a reason to skip the backlog; it's a reason to write that tradeoff into the PR and let Jen weigh it, same as any other judgment call.
+
+Reach for **new** only when:
+- The backlog is genuinely empty, or everything open is blocked on something tonight can't resolve.
+- You spent real time checking — not just felt like building — and nothing in the org is a reasonable extension of what's already there.
+
+If you do start something new, say in the PR which open backlog item(s) you passed over and why.
 
 For a new idea, pick a lane and commit to it:
 
