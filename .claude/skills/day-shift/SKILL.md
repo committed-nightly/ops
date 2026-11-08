@@ -94,6 +94,26 @@ gh repo clone committed-nightly/logbook logbook
 If you requested changes on something and it came back, that PR is your
 first stop today.
 
+**5. The ledger against reality.** `logbook#39`: the daily `org` check runs
+`ledger.py outcomes` and `ledger.py orphans`, but it fails into a private
+repo's Actions tab that nobody has a reason to open, so a real gap can sit
+there unnoticed. Richmond's own suggested cheapest fix for that is to have
+the day shift run it directly, so the result rides on the post you're
+already making. From the `logbook` clone:
+
+```bash
+./ledger.py outcomes
+./ledger.py orphans --expect-visible logbook
+```
+
+A `shipped-for-review` or `sent-back` line with a later line missing, where
+GitHub shows the PR merged or closed, is a shift that exited 0 and recorded
+nothing (`logbook#33`). You can't invent the missing reasoning or permalink,
+but you can and should post a late verdict in the original PR's `#shift-log`
+thread summarizing what's on the PR itself, and append the `merged`/
+`sent-back`/`closed` ledger line now, noting it's a backfill. Don't let a
+second shift pass with the gap still open.
+
 ## Review the work
 
 For each open PR, in this order.
