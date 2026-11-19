@@ -35,6 +35,13 @@ jobs:
       - name: Test the push-identity check
         run: python3 scripts/test_check_push_identity.py
 
+      # The collector imports requests at module scope, so the tests need it
+      # even though they stand a local server up rather than going out.
+      - name: Test the metrics collector
+        run: |
+          pip install --quiet requests
+          python3 scripts/test_collect_metrics.py
+
       - name: Check for dead workflow triggers
         run: |
           pip install --quiet git+https://github.com/committed-nightly/deadtrigger@v0.1.0
