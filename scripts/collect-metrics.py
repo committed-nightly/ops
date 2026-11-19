@@ -358,6 +358,34 @@ def collect_github():
 
 # ----------------------------------------------------------------- Slack
 
+# A day shift reviews the night before, so its verdict can land inside the
+# window under a parent that is not. Three days is enough for a Friday night
+# reviewed on Monday, and cheap: it buys a handful of extra thread fetches.
+THREAD_LOOKBACK_DAYS = 3
+
+
+def thread_replies(cid, parents):
+    """Replies to `parents`, filtered to the window. Returns (msgs, errors)."""
+    got, errs = [], []
+    for parent in parents:
+        if not parent.get("reply_count"):
+            continue
+        body = slack("conversations.replies", channel=cid, ts=parent["ts"],
+                     limit=200)
+        if not body.get("ok"):
+            errs.append({"channel": "shift-log", "thread": parent["ts"],
+                         "error": body["error"]})
+            continue
+        for m in body.get("messages", []):
+            if m["ts"] == parent["ts"]:
+                continue
+            if float(m["ts"]) < SINCE.timestamp():
+                continue
+            got.append(m)
+        time.sleep(0.05)
+    return got, errs
+
+
 def collect_slack():
     channels = {
         "shift-log": os.environ.get("SLACK_SHIFT_LOG"),
@@ -367,21 +395,51 @@ def collect_slack():
         "memes": os.environ.get("SLACK_MEMES"),
     }
     out, excerpts, errors = {}, [], []
+    unparsed_verdicts = []
 
     for label, cid in channels.items():
         if not cid:
             errors.append({"channel": label, "error": "no channel id configured"})
             continue
 
+        # shift-log is read with a lookback, so a verdict inside the window
+        # that hangs under a night post just outside it is still found. The
+        # replies themselves are filtered to the window; the extra parents
+        # are dropped below.
+        oldest = SINCE - timedelta(days=THREAD_LOOKBACK_DAYS if label == "shift-log" else 0)
         body = slack("conversations.history", channel=cid, limit=200,
-                     oldest=str(SINCE.timestamp()))
+                     oldest=str(oldest.timestamp()))
         if not body.get("ok"):
             errors.append({"channel": label, "error": body["error"]})
             continue
 
+        raw = body.get("messages", [])
+
+        # The day shift clocks out *in the thread* under the night post it is
+        # reviewing -- "one thread is one full cycle", per its own template.
+        # conversations.history never returns thread replies, so every day
+        # verdict the company has ever written was invisible here: 87 replies
+        # across the 90 days Slack holds, 78 of them Jen's.
+        if label == "shift-log":
+            got, errs = thread_replies(cid, raw)
+            errors.extend(errs)
+            # Now drop the lookback parents. They were fetched to find
+            # threads, not to be counted -- leaving them in would add up to
+            # three extra days of night shifts to every window.
+            raw = [m for m in raw
+                   if float(m["ts"]) >= SINCE.timestamp()] + got
+
         msgs = []
-        for m in body.get("messages", []):
+        for m in raw:
             text = m.get("text", "")
+            kind = classify(text)
+            outcome, unparsed = (verdict_outcome(text) if kind == "day"
+                                 else (None, None))
+            if unparsed:
+                unparsed_verdicts.append({
+                    "ts": m["ts"], "author": m.get("username", "?"),
+                    "line": unparsed,
+                })
             msgs.append({
                 "ts": m["ts"],
                 "at": datetime.fromtimestamp(float(m["ts"]), timezone.utc).isoformat(),
@@ -389,40 +447,67 @@ def collect_slack():
                 "chars": len(text),
                 "threaded": bool(m.get("thread_ts") and m["thread_ts"] != m["ts"]),
                 "reply_count": m.get("reply_count", 0),
-                # The clock-out format is structured; parse the outcome
-                # rather than asking the model to eyeball it.
-                "outcome": next(
-                    (o for o in ("no-work", "shipped-for-review", "revised",
-                                 "abandoned", "merged", "sent back", "closed")
-                     if o in text.lower()), None),
+                # Which shift's clock-out this is, from the skeleton of bold
+                # labels -- not from whether the prose happens to use one of
+                # the outcome words (logbook#65). `outcome` is the day
+                # shift's `*Verdict*` field; a night's outcome is not in
+                # Slack at all and comes from the ledger.
+                "clock_out": kind,
+                "outcome": outcome,
             })
-            for kind, pats in (("disagreement", DISAGREEMENT_PATTERNS),
-                               ("self_correction", SELF_CORRECTION_PATTERNS)):
+            for ekind, pats in (("disagreement", DISAGREEMENT_PATTERNS),
+                                ("self_correction", SELF_CORRECTION_PATTERNS)):
                 for hit in find(pats, text):
                     excerpts.append({
-                        "kind": kind, "source": f"slack/{label}",
+                        "kind": ekind, "source": f"slack/{label}",
                         "author": m.get("username", "?"), "excerpt": hit,
                     })
 
         out[label] = msgs
 
-    return {"channels": out, "excerpts": excerpts, "errors": errors}
+    return {"channels": out, "excerpts": excerpts, "errors": errors,
+            "unparsed_verdicts": unparsed_verdicts}
 
 
 # ---------------------------------------------------------------- output
 
-def series_row(gh_data, slack_data):
+def series_row(gh_data, slack_data, ledger_data):
     prs = [p for p in gh_data["prs"] if p["in_window"]]
     merged = [p for p in prs if p["merged"]]
     log = slack_data["channels"].get("shift-log", [])
-    shifts = [m for m in log if m["outcome"]]
+    # A shift is a clock-out post, identified by its skeleton. It used to be
+    # "a message with one of seven words in it anywhere", which over the
+    # eleven weeks already in series.csv never once got this right: it read
+    # 3, 3, 2, 1, 3, 5, 0, 3, 1, 4, 0 for weeks that each held about seven
+    # night shifts and about as many day verdicts, and the two zeroes were
+    # not quiet weeks (logbook#65).
+    nights = [m for m in log if m["clock_out"] == "night"]
+    days = [m for m in log if m["clock_out"] == "day"]
+    shifts = nights + days
+    ledger = ledger_data["outcomes"]
     ttm = [p["hours_to_merge"] for p in merged if p["hours_to_merge"]]
     ttr = [p["hours_to_first_review"] for p in prs if p["hours_to_first_review"]]
 
     return {
         "date": NOW.date().isoformat(),
         "shifts_logged": len(shifts),
-        "no_work_shifts": sum(1 for m in shifts if m["outcome"] == "no-work"),
+        "night_clock_outs": len(nights),
+        "day_clock_outs": len(days),
+        # From the ledger: a night's clock-out has no outcome field, so this
+        # is not in Slack to be read. `—` in the ledger's PR column covers
+        # both a no-work night and an `ops` push, so the outcome word is the
+        # only thing that tells them apart.
+        "no_work_shifts": ledger.get("no-work", 0),
+        "ledger_lines": ledger_data["rows"],
+        "ledger_merged": ledger.get("merged", 0),
+        "ledger_sent_back": ledger.get("sent-back", 0),
+        "ledger_shipped_for_review": ledger.get("shipped-for-review", 0),
+        # Both of these should be 0. A verdict the parser cannot read, or a
+        # ledger outcome that is not in `ledger.py`'s list, means a format
+        # moved -- and the point of logbook#65 is that it should cost a
+        # number here rather than going unnoticed.
+        "unparsed_verdicts": len(slack_data.get("unparsed_verdicts", [])),
+        "ledger_unknown_outcomes": len(ledger_data["unknown"]),
         "prs_opened": len(prs),
         "prs_merged": len(merged),
         "prs_sent_back": sum(1 for p in prs if p["sent_back"]),
@@ -450,6 +535,42 @@ def series_row(gh_data, slack_data):
     }
 
 
+def write_series_row(csv_path, row):
+    """Append `row`, rewriting the header if this run added columns.
+
+    The old code appended under whatever header was already there. Add a
+    field and every row after it is written one column to the left of its
+    name, which `csv.DictReader` in make-charts.py reads without complaint
+    and charts. Growing the header is a migration, so do it as one: keep the
+    old column order, put new columns on the end, and give the rows already
+    in the file an empty cell rather than inventing a value for a week
+    nobody measured.
+    """
+    old_rows, old_cols = [], []
+    if csv_path.exists():
+        with csv_path.open(newline="") as f:
+            reader = csv.DictReader(f)
+            old_cols = reader.fieldnames or []
+            old_rows = list(reader)
+
+    cols = old_cols + [c for c in row if c not in old_cols]
+    if cols == old_cols:
+        with csv_path.open("a", newline="") as f:
+            csv.DictWriter(f, fieldnames=cols).writerow(row)
+        return
+
+    with csv_path.open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=cols, restval="")
+        w.writeheader()
+        for old in old_rows:
+            w.writerow({k: v for k, v in old.items() if k in cols})
+        w.writerow(row)
+    added = [c for c in cols if c not in old_cols]
+    if old_cols and added:
+        print(f"series.csv: added columns {', '.join(added)}; "
+              f"{len(old_rows)} existing rows left empty there", file=sys.stderr)
+
+
 def main():
     out_dir = Path(os.environ.get("METRICS_DIR", "logbook/metrics"))
     if not out_dir.parent.exists():
@@ -458,28 +579,31 @@ def main():
 
     gh_data = collect_github()
     slack_data = collect_slack()
+    ledger_data = read_ledger(out_dir.parent / "SHIFTS.md")
 
     snapshot = {
         "collected_at": NOW.isoformat(),
         "window_days": WINDOW_DAYS,
         "github": gh_data,
         "slack": slack_data,
+        "ledger": ledger_data,
     }
 
     snap_path = out_dir / "data" / f"{NOW.date().isoformat()}.json"
     snap_path.write_text(json.dumps(snapshot, indent=2, default=str))
 
-    row = series_row(gh_data, slack_data)
-    csv_path = out_dir / "series.csv"
-    exists = csv_path.exists()
-    with csv_path.open("a", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=list(row))
-        if not exists:
-            w.writeheader()
-        w.writerow(row)
+    row = series_row(gh_data, slack_data, ledger_data)
+    write_series_row(out_dir / "series.csv", row)
 
     if slack_data["errors"]:
         print("SLACK ERRORS:", json.dumps(slack_data["errors"]), file=sys.stderr)
+    if ledger_data["error"]:
+        print("LEDGER UNREADABLE:", ledger_data["error"], file=sys.stderr)
+    for u in slack_data.get("unparsed_verdicts", []):
+        print(f"UNPARSED VERDICT {u['ts']} {u['author']}: {u['line']}",
+              file=sys.stderr)
+    for u in ledger_data["unknown"]:
+        print(f"LEDGER OUTCOME NOT IN VOCABULARY: {u}", file=sys.stderr)
 
     print(json.dumps(row, indent=2))
     print(f"\nsnapshot: {snap_path}")
