@@ -27,8 +27,10 @@ from pathlib import Path
 import requests
 
 ORG = "committed-nightly"
-GH = "https://api.github.com"
-SLACK = "https://slack.com/api"
+# Overridable so the tests can point the script at a real local server.
+# Nothing else sets these; in CI and on a shift they are the real hosts.
+GH = os.environ.get("GH_API", "https://api.github.com")
+SLACK = os.environ.get("SLACK_API", "https://slack.com/api")
 
 GH_HEADERS = {
     "Authorization": f"Bearer {os.environ['GH_TOKEN']}",
@@ -53,6 +55,163 @@ SELF_CORRECTION_PATTERNS = [
     r"\bI was wrong\b", r"\bstruck? through\b", r"\bmy mistake\b",
     r"\bI got .{0,20} wrong\b", r"\bcorrection\b", r"\bI'?d been wrong\b",
 ]
+
+
+# ------------------------------------------------------ shift clock-outs
+#
+# Both shifts clock out into #shift-log with a bold-label skeleton, and the
+# outcome is one field of it -- not a word loose in the prose. Reading the
+# prose is what logbook#65 was: the old parser substring-matched seven words
+# against the whole message, so "nothing here was abandoned" tagged a clean
+# shift `abandoned`. Measured over the 100 messages Slack still holds, it
+# found an outcome in 27, and every one of those 27 took it from a prose
+# line -- `*Why*`, `*Left for next time*`, a bullet list -- because the
+# night-shift template has no outcome field for it to read.
+#
+# Labels are matched with one or two asterisks either side: Slack mrkdwn
+# wants one, both shifts write Markdown's two about a fifth of the time, and
+# the day-shift template is a blockquote so a leading '>' is normal.
+
+NIGHT_LABELS = frozenset({
+    "built", "revised", "why", "pr", "rough edges", "left for next time",
+})
+DAY_LABELS = frozenset({"verdict", "late verdict", "checked", "asks", "honestly"})
+
+# A label owns its line: it starts it (after any blockquote marker) and is
+# followed by the template's em dash, or a colon or hyphen if someone typed
+# one. Without that trailing separator this matches any bold phrase that
+# happens to open a line, of which the corpus has plenty.
+LABEL_RE = re.compile(
+    r"^[ \t]*>?[ \t]*\*{1,2}([A-Za-z][^*\n]{0,40}?)\*{1,2}[ \t]*(?:\u2014|--|[-:])",
+    re.M,
+)
+
+# The ledger's vocabulary, longest first so "sent back" is tried before a
+# bare word inside it could win. `ledger.py` holds the canonical list and
+# refuses anything off it; these are the same seven, plus the spaced spelling
+# of `sent-back` that the day-shift template actually prints.
+VERDICT_TERMS = (
+    ("shipped-for-review", "shipped-for-review"),
+    ("sent-back", "sent-back"),
+    ("sent back", "sent-back"),
+    ("abandoned", "abandoned"),
+    ("no-work", "no-work"),
+    ("revised", "revised"),
+    ("merged", "merged"),
+    ("closed", "closed"),
+)
+
+
+def labels(text):
+    """The bold field labels this message uses, lowercased.
+
+    "Late verdict, posted today" is the day shift's backfill spelling, so a
+    label is cut at its first comma before being looked up.
+    """
+    out = set()
+    for raw in LABEL_RE.findall(text or ""):
+        out.add(raw.split(",")[0].strip().lower())
+    return out
+
+
+def classify(text):
+    """'night', 'day' or None -- which shift's clock-out this message is.
+
+    Structure only. A message that talks about a shift is not a clock-out,
+    which is the whole of logbook#65.
+    """
+    seen = labels(text)
+    if seen & {"verdict", "late verdict"} or {"checked", "honestly"} <= seen:
+        return "day"
+    # Two fields of the skeleton. One is a bold line that happens to be
+    # called "Why"; the template never prints fewer than four.
+    if len(seen & NIGHT_LABELS) >= 2:
+        return "night"
+    return None
+
+
+def verdict_outcome(text):
+    """(outcome, unparsed_line) from the `*Verdict*` field alone.
+
+    Scans that one field, not the message -- and only as far as the end of
+    its first clause, because the template is `**Verdict** - merged / sent
+    back / closed` and the outcome is what the field opens with. Anything
+    after the first `. ` or `; ` is the day shift saying what else it did:
+    one real verdict reads "merged. ... logbook#12 closed.", and reading the
+    whole field makes that two outcomes and no answer.
+
+    If the clause names exactly one outcome it is that outcome. If it names
+    none or several the field comes back as `unparsed` so a changed format
+    shows up in the report as a number and a quotable line, instead of as a
+    quiet wrong answer. On the corpus that is 3 of 77 -- "nothing to
+    review", "nothing to merge", "no change" -- all of them days on which
+    the answer genuinely was not one of the three.
+    """
+    for line in (text or "").split("\n"):
+        found = LABEL_RE.match(line)
+        if not found or found.group(1).split(",")[0].strip().lower() not in (
+            "verdict", "late verdict"
+        ):
+            continue
+        low = re.split(r"(?:\.|;)[ \t]", line.lower(), maxsplit=1)[0]
+        hits, spans = [], []
+        for term, outcome in VERDICT_TERMS:
+            for m in re.finditer(rf"(?<![\w-]){re.escape(term)}(?![\w-])", low):
+                # "sent-back" also contains "back"-less matches of shorter
+                # terms; keep the first term to claim a span.
+                if any(s < m.end() and m.start() < e for s, e in spans):
+                    continue
+                spans.append((m.start(), m.end()))
+                if outcome not in hits:
+                    hits.append(outcome)
+        if len(hits) == 1:
+            return hits[0], None
+        return None, line.strip()[:200]
+    return None, None
+
+
+# ----------------------------------------------------------- the ledger
+#
+# A night shift's clock-out has no outcome field at all -- the outcome of a
+# night is written in `SHIFTS.md`, in a column, from a closed vocabulary. So
+# that is where it is read from, by the date column, rather than guessed at
+# from the post. The two sources are deliberately not joined row to row: the
+# ledger's Slack permalink points at whichever message the shift posted last,
+# which for 8 of 79 nights is a follow-up and not the clock-out.
+
+LEDGER_OUTCOMES = frozenset({
+    "shipped-for-review", "revised", "merged", "sent-back", "closed",
+    "abandoned", "no-work",
+})
+LEDGER_ROW = re.compile(r"^(\d{4}-\d\d-\d\d)\s*\|[^|]*\|[^|]*\|\s*([^|\s]+)\s*\|")
+
+
+def read_ledger(path):
+    """Outcomes from the ledger rows dated inside the window.
+
+    An outcome that is not in `ledger.py`'s list is not silently dropped --
+    it means one of the two files has drifted, and that is a finding.
+    """
+    out = {"rows": 0, "outcomes": {}, "unknown": [], "error": None}
+    try:
+        text = Path(path).read_text()
+    except OSError as e:
+        out["error"] = str(e)
+        return out
+    for line in text.splitlines():
+        m = LEDGER_ROW.match(line)
+        if not m:
+            continue
+        day = datetime.strptime(m.group(1), "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        if day.date() < SINCE.date():
+            continue
+        out["rows"] += 1
+        outcome = m.group(2)
+        if outcome not in LEDGER_OUTCOMES:
+            out["unknown"].append(line[:160])
+            continue
+        out["outcomes"][outcome] = out["outcomes"].get(outcome, 0) + 1
+    return out
 
 
 def gh(path, **params):
